@@ -1,0 +1,84 @@
+#!/bin/sh
+
+echo "Content-type: text/html"
+echo 
+echo "<html><head><title>Configure Ethernet</title></head>"
+
+echo '<body>'
+
+
+  # Make sure we have been invoked properly.
+
+  if [ "$REQUEST_METHOD" != "GET" ]; then
+        echo "<hr>Script Error:"\
+             "<br>Usage error, cannot complete request, REQUEST_METHOD!=GET."\
+             "<br>Check your FORM declaration and be sure to use METHOD=\"GET\".<hr>"
+        exit 1
+  fi
+
+  # If no search arguments, exit gracefully now.
+
+  if [ -z "$QUERY_STRING" ]; then
+        exit 0
+  else
+     # No looping this time, just extract the data you are looking for with sed:
+     UUID=`echo "$QUERY_STRING" | sed -n 's/^.*val_uuid=\([^&]*\).*$/\1/p' | sed -f /www/cgi-bin/urldecode.sed`
+     CONFIGPASS=`echo "$QUERY_STRING" | sed -n 's/^.*val_configpass=\([^&]*\).*$/\1/p' | sed -f /www/cgi-bin/urldecode.sed`
+     SENSORTOKEN=`echo "$QUERY_STRING" | sed -n 's/^.*val_sensortoken=\([^&]*\).*$/\1/p' | sed -f /www/cgi-bin/urldecode.sed`
+     SERVERTOKEN=`echo "$QUERY_STRING" | sed -n 's/^.*val_servertoken=\([^&]*\).*$/\1/p' | sed -f /www/cgi-bin/urldecode.sed`
+     THREAD=`echo "$QUERY_STRING" | sed -n 's/^.*val_threads=\([^&]*\).*$/\1/p' | sed -f /www/cgi-bin/urldecode.sed`
+     BATCH=`echo "$QUERY_STRING" | sed -n 's/^.*val_batch=\([^&]*\).*$/\1/p' | sed -f /www/cgi-bin/urldecode.sed`
+     DISABLESSH=`echo "$QUERY_STRING" | sed -n 's/^.*val_sshdisable=\([^&]*\).*$/\1/p' | sed -f /www/cgi-bin/urldecode.sed`
+
+     inputpass=`uhttpd -m $CONFIGPASS`
+     actualpass=`uci get sensorid.sensor.configpass`
+
+     if [ "$inputpass" == "$actualpass" ]
+     then
+     echo "match"
+     uci set sensorid.sensor.id=$UUID
+     uci set sensorid.sensor.sensortoken=$SENSORTOKEN
+     uci set sensorid.sensor.servertoken=$SERVERTOKEN
+     uci commit sensorid
+     echo "configpass is  "$CONFIGPASS
+     echo "modified sensorid to "$UUID
+     echo "modified sensortoken to "$SENSORTOKEN
+     echo "modified servertoken to "$SERVERTOKEN
+     echo '<br>'
+     if [[ -n "$THREAD" ]];then
+         uci set radiolocus.radiolocus.curlingthreads=$THREAD
+         uci commit radiolocus
+         echo "modified no of threads to "$THREAD
+         echo '<br>'
+         /etc/init.d/sniffex restart
+     fi
+     if [[ -n "$BATCH" ]];then
+         echo '<br>'
+         uci set radiolocus.radiolocus.maxtuplesinbatch=$BATCH
+         uci commit radiolocus
+         echo "modified no of tuples in a batch to "$BATCH
+         echo '<br>'
+         /etc/init.d/sniffex restart
+     fi
+     if [ "$DISABLESSH" == "true" ]
+     then
+     echo '<br>'
+     echo "disabling ssh"
+     echo '<br>'
+     /etc/init.d/dropbear stop
+     /etc/init.d/dropbear disable
+     else
+     echo '<br>'
+     echo "enabling ssh"
+     echo '<br>'
+     /etc/init.d/dropbear start
+     /etc/init.d/dropbear enable
+     fi
+     else
+         echo "password does not match!"
+     fi
+  fi
+echo '<meta http-equiv="Refresh" content="1; url=overview">'
+
+echo '</body>'
+echo '</html>'

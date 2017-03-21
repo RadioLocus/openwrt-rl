@@ -1,0 +1,26 @@
+#!/bin/ash
+
+upSeconds="$(cat /proc/uptime | grep -o '^[0-9]\+')"
+UPTIME=$((${upSeconds} / 60))
+TIMESTAMP=`date +%s| awk '{print $1"000"}'`
+CPU_USAGE=`grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage ""}'`
+FREE_MEMORY=`cat /proc/meminfo | grep MemFree| awk '{print $2/1024}'`
+FREE_DISK=`df | grep rootfs | awk '{print $4}'`
+if [ "$1" == "uptime" ];then
+	printf $UPTIME
+elif [ "$1" == "free_disk" ];then
+        printf $FREE_DISK
+elif [ "$1" == "free_memory" ];then
+        printf $FREE_MEMORY
+elif [ "$1" == "cpu_usage" ];then
+        printf $CPU_USAGE
+elif [ "$1" == "timestamp" ];then
+        printf $TIMESTAMP
+else
+	echo "CPU-USAGE = "$CPU_USAGE
+	echo "FREE_MEMORY = "$FREE_MEMORY
+	echo "FREE_DISK = "$FREE_DISK
+	echo "UPTIME = "$UPTIME
+	echo "HEADERS ="$HEADERS
+fi
+

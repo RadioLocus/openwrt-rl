@@ -1,0 +1,11 @@
+#!/bin/ash
+echo "Adding to crontab"
+if [ ! -f /etc/crontabs/root ]; then
+    touch /etc/crontabs/root
+fi
+echo "removing existing crons for alerts"
+sed -i '/alerts/d' /etc/crontabs/root
+echo "adding cron"
+echo '*/1 * * * * . /etc/profile;alerts' >> /etc/crontabs/root
+/etc/init.d/cron reload
+echo "added cron"

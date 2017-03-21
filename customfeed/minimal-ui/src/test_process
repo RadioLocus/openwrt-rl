@@ -1,0 +1,40 @@
+#!/bin/sh
+
+echo "Content-type: text/html"
+echo 
+echo "<html><head><title>Configure Ethernet</title></head>"
+
+echo '<body>'
+
+
+  # Make sure we have been invoked properly.
+
+  if [ "$REQUEST_METHOD" != "GET" ]; then
+        echo "<hr>Script Error:"\
+             "<br>Usage error, cannot complete request, REQUEST_METHOD!=GET."\
+             "<br>Check your FORM declaration and be sure to use METHOD=\"GET\".<hr>"
+        exit 1
+  fi
+
+  # If no search arguments, exit gracefully now.
+
+  if [ -z "$QUERY_STRING" ]; then
+        exit 0
+  else
+     echo '<b>starting</b><br>'
+     # No looping this time, just extract the data you are looking for with sed:
+     MACID=`echo "$QUERY_STRING" | sed -n 's/^.*val_macid=\([^&]*\).*$/\1/p' | sed -f /www/cgi-bin/urldecode.sed`
+     TIMEOUT=`echo "$QUERY_STRING" | sed -n 's/^.*val_timeout=\([^&]*\).*$/\1/p' | sed -f /www/cgi-bin/urldecode.sed`
+     echo "<b>starting with $MACID for $TIMEOUT seconds</b><br>"
+     #timeout 20 tcpdump -i mon0 ether host 40:78:6a:35:57:3e | grep dB | awk -F'dB' '{print $1}' | awk '{print $(NF),"<br>"}' | grep -n -
+     #timeout $TIMEOUT tcpdump -i mon0 ether host $MACID| grep dB | awk -F'dB' '{print $1}' | awk '{print $(NF),"<br>"}' | grep -n -
+     cat /dev/null > /tmp/tmpdata
+     timeout $((TIMEOUT+5)) ash /www/cgi-bin/interval.ash &
+     ash /www/cgi-bin/tcpdump_script.ash $TIMEOUT $MACID &    
+     timeout $((TIMEOUT+5)) tail -f /tmp/tmpdata
+     echo '<b>stopping</b>'
+ fi
+#echo '<meta http-equiv="Refresh" content="1; url=overview">'
+echo '</body>'
+echo '</html>'
+

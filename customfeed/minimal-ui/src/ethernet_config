@@ -1,0 +1,91 @@
+#!/bin/sh
+echo "Content-type: text/html"
+echo 
+
+echo '<html><head><title>Radiolocus</title><link href="../styles/style.css" rel="stylesheet" type="text/css"><link rel="icon" href="../images/favicon.ico" type="x-icon"></head>'
+
+echo '<body><div class="margin"><a href="http://radiolocus.com" target="http://radiolocus.com"><img src="../images/logo.png" class="logo"></a><ul class="header"><li><a href="./overview">Status</a></li><li><a href="./sensor_config">Sensor</a></li><li><a href="./wifi_config">Wi-Fi</a></li><li><a href="./3g_config">3G Dongle</a></li><li><a href="./ethernet_config">Ethernet</a></li><li><a href="./proxy_config">Proxy</a></li><li><a href="../contact.html">Contact</a></li></ul>' 
+echo '<div id="header_form">Configure Ethernet</div>'
+
+  echo "<div class="form"><form method=GET action=\"./ethernet_process\" onsubmit=\"return validateform()\">"\
+       '<table nowrapp="" class="table"><tbody>'\
+          '<tr><td>Dhcp IP Assignment?'\
+          '</td><td><input type="checkbox" id="is_dhcp" name="is_dhcp" value="dhcp" onchange="dhcpVerify();" checked></td></tr>'\
+          '<tr><td>IP Address</td><td><input type="text" id="ipaddr" name="val_ipaddr" size=12 value="" disabled></td></tr>'\
+          '<tr><td>Netmask</td><td><input type="text" id="netmask" name="val_netmask" size=12 value="" disabled></td></tr>'\
+          '<tr><td>Gateway</td><td><input type="text" id="gateway" name="val_gateway" size=12 value="" disabled></td>'\
+          '<tr><td>DNS server</td><td><input type="text" id="dns" name="val_dns" size=12 value="" disabled></td>'\
+          '<tr><td>Custom NTP?'
+  echo '</td><td><input type="checkbox" id="is_ntp" name="is_ntp" value="ntp" onchange="ntpVerify();" checked></td></tr>'\
+          '<tr><td>NTP</td><td><input type="text" id="ntp" name="val_ntp" size=12 value="" disabled></td>'
+  echo '</tr></table>'
+
+   echo '<script>'\
+        'function dhcpVerify() {'\
+        'var dd = document.getElementById("is_dhcp").checked;'\
+        'if (dd == false){'\
+        'document.getElementById("ipaddr").disabled=false;'\
+        'document.getElementById("netmask").disabled=false;'\
+        'document.getElementById("gateway").disabled=false;'\
+        'document.getElementById("dns").disabled=false;'\
+        '}else{'\
+        'document.getElementById("ipaddr").disabled=true;'\
+        'document.getElementById("netmask").disabled=true;'\
+        'document.getElementById("gateway").disabled=true;'\
+        'document.getElementById("dns").disabled=true;'\
+        '}'\
+        '}'\
+        'function ntpVerify() {'
+  echo  'var dd = document.getElementById("is_ntp").checked;'
+  echo  'if (dd == false){'\
+        'document.getElementById("ntp").disabled=false;'\
+        '}else{'\
+        'document.getElementById("ntp").disabled=true;'\
+        '}'\
+        '}'\
+        'function validateform() {'\
+        'var dd = document.getElementById("is_dhcp").checked;'\
+        'if (dd == false){'\
+        'var ip = document.getElementById("ipaddr").value;'\
+        'var netmask = document.getElementById("netmask").value;'\
+        'var gateway = document.getElementById("gateway").value;'\
+        'var op = validateIPaddress(document.getElementById("ipaddr"));'\
+        'if (op == false){'\
+        'return false;'\
+        '}'\
+        'var op = validateIPaddress(document.getElementById("netmask"));'\
+        'if (op == false){'\
+        'return false;'\
+        '}'\
+        'var op = validateIPaddress(document.getElementById("gateway"));'\
+        'if (op == false){'\
+        'return false;'\
+        '}'\
+        '}'\
+        'var dd = document.getElementById("is_ntp").checked;'
+   echo 'if (dd == false){'\
+        'var ntp = document.getElementById("ntp");'\
+       'if (ntp.value == "") {'\
+        "ntp.style.border=\"1px solid #ff0000\"; return false;}"\
+        '}'\
+        '}'\
+        'function validateIPaddress(inputText)'\
+        '{'\
+        "var ipformat = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;"\
+        "if (inputText.value.match(ipformat)){"
+    echo "inputText.style=\"\";"\
+        "return true;"\
+        "}" 
+    echo 'else{'\  
+    echo "inputText.style.border=\"1px solid #ff0000\";"\
+        "return false;"\
+        "}"\
+        "}"  
+    echo "</script>"
+
+  echo '<br/><br><div id="submit"><input type="submit" value="Save">'\
+       '<input type="reset" value="Reset"></div></form></div><br/>'
+
+
+echo '<div><div class="footer" ><span>&#169; 2017 Radiolocus. All rights reserved.</span></div></div></div></div></body>'
+echo '</html>'

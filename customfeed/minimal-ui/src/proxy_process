@@ -1,0 +1,50 @@
+#!/bin/sh
+
+echo "Content-type: text/html"
+echo 
+echo "<html><head><title>Configure Ethernet</title></head>"
+
+echo '<body>'
+
+
+  # Make sure we have been invoked properly.
+
+  if [ "$REQUEST_METHOD" != "GET" ]; then
+        echo "<hr>Script Error:"\
+             "<br>Usage error, cannot complete request, REQUEST_METHOD!=GET."\
+             "<br>Check your FORM declaration and be sure to use METHOD=\"GET\".<hr>"
+        exit 1
+  fi
+
+  # If no search arguments, exit gracefully now.
+
+  if [ -z "$QUERY_STRING" ]; then
+        exit 0
+  else
+     # No looping this time, just extract the data you are looking for with sed:
+     PIP=`echo "$QUERY_STRING" | sed -n 's/^.*val_proxyip=\([^&]*\).*$/\1/p'`
+     PPT=`echo "$QUERY_STRING" | sed -n 's/^.*val_proxyport=\([^&]*\).*$/\1/p'`
+     PUN=`echo "$QUERY_STRING" | sed -n 's/^.*val_proxyusername=\([^&]*\).*$/\1/p'`
+     PPASS=`echo "$QUERY_STRING" | sed -n 's/^.*val_proxypassword=\([^&]*\).*$/\1/p'`
+     if [[ -n "$PIP" && -n "$PPT" && -n "$PUN" && -n "$PPASS" ]]; then
+        sed -i "/PROXYIP=/c\PROXYIP=\"$PIP\"" /etc/profile
+        sed -i "/PROXYPORT=/c\PROXYPORT=\"$PPT\"" /etc/profile
+        sed -i "/PROXYUSERNAME=/c\PROXYUSERNAME=\"$PUN\"" /etc/profile
+        sed -i "/PROXYPASS=/c\PROXYPASS=\"$PPASS\"" /etc/profile
+	echo "configured ip, port, username, password"
+     elif [[ -n "$PIP" && -n "$PPT" ]]; then
+        sed -i "/PROXYIP=/c\PROXYIP=\"$PIP\"" /etc/profile
+	sed -i "/PROXYPORT=/c\PROXYPORT=\"$PPT\"" /etc/profile
+	echo "configure ip, port"
+     else
+	sed -i "/PROXYIP=/c\PROXYIP=\"\"" /etc/profile
+        sed -i "/PROXYPORT=/c\PROXYPORT=\"\"" /etc/profile
+        sed -i "/PROXYUSERNAME=/c\PROXYUSERNAME=\"\"" /etc/profile
+        sed -i "/PROXYPASS=/c\PROXYPASS=\"\"" /etc/profile
+	echo "cleaning up"
+     fi
+
+ fi
+echo '<meta http-equiv="Refresh" content="1; url=overview">'
+echo '</body>'
+echo '</html>'

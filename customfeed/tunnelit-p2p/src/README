@@ -1,0 +1,12 @@
+                         tunnelit 0.0.1.1514
+
+Release information:
+  pkg:  TunnelIt version 0.0.1.1514
+  url:  http://www.rkeene.org/devel/tunnelit-0.0.1.1514.tar.gz
+  date: Mon Aug 17 08:56:05 CDT 2009
+--------------------------------------------------------------------------
+
+tunnelit-p2p is a `netcat'-like simple tunnel tool using the Linux TUN/TAP
+driver (TAP mode).
+
+It is licensed under the MIT license.

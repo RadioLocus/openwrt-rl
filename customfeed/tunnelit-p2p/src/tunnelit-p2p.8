@@ -1,0 +1,93 @@
+.PU
+.TH TUNNELIT 8 "17 Aug 2009" "tunnelit 0.0.1.1514"
+.SH NAME
+tunnelit-p2p \- Tunnel Ethernet links over TCP or UDP
+
+.SH SYNOPSIS
+.B tunnelit-p2p
+.RB [ " \-VFhluo " ]
+.RB [ "\-p port" ]
+.RB [ "\-H host" ]
+.RB [ "\-d devname" ]
+.RB [ "\-f tunpath" ]
+.RB [ "\-t keepalive" ]
+
+.SH DESCRIPTION
+.B tunnelit-p2p
+is a utility to tunnel Ethernet links over a TCP or a UDP socket.  This is done by creating a local interface (using the TUN/TAP driver) on two systems that can reach each other over TCP or UDP, and forwarding whatever is received by one to the other.  It is intentionally simple, and has no authentication or encryption.  The same client program is used on both the sender and the receiver.
+
+.SH OPTIONS
+.B "-V"
+.RS
+Print version and exit
+.RE
+
+.B "-F"
+.RS
+Run in foreground, the default behavior is to background after creating the TUN/TAP interface.
+.RE
+
+.B "-h"
+.RS
+Print usage information and exit in success.
+.RE
+
+.B "-l"
+.RS
+Be a listener, the default action is to connect to a remote host
+.RE
+
+.B "-u"
+.RS
+Use a UDP socket instead of a TCP socket.  This option implies the
+.B "-o"
+option.
+.RE
+
+.B "-o"
+.RS
+Only allow one host to connect to our listener.  It is generally a good idea to only have one host connect to a listener for bandwidth reasons.  Anything received by one socket is transmitted to all connected sockets.
+.RE
+
+.B "-p"
+.I port
+.RS
+Specify the port to connect to the remote host (specified using the
+.B "-H"
+option) on, or to listen on if the
+.B "-l"
+option was specified.  The default is 656.
+.RE
+
+.B "-H"
+.I host
+.RS
+Specify the host to connect to.  Can be either a DNS name or an IP address.  This option is required unless the
+.B "-l"
+option is specified.
+.RE
+
+.B "-d"
+.I devname
+.RS
+Specify the local TUN/TAP device name to create.  The default is to let the system decide (usually "tap%d").  It can include a "%d" to indicate a numeric value should be generated for you. (i.e., "eth%d" will create an interface named "eth3" if you already have "eth0", "eth1", and "eth2").
+.RE
+
+.B "-f"
+.I tunpath
+.RS
+Specify the path to TUN/TAP user-space interface (i.e., "/dev/net/tun").
+.RE
+
+.B "-t"
+.I keepalive
+.RS
+Specify how often, in seconds, to send empty keep-alive packets to maintain the connection.  The value 0 may be used to specify that keep-alives are never sent.  The default is 900 seconds.
+.RE
+
+.SH FILES
+NONE
+
+.SH AUTHOR
+Roy Keene
+.I <tunnelit@rkeene.org>

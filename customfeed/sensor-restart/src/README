@@ -1,0 +1,14 @@
+CONFIGURATIONS:
+
+interface - interface to monitor if it has come up or not
+monInterface - monitor interface to monitor if it has come up or not
+curlServer - curl this url to check if internets working
+tmpFileInterfacePresentIter - temp file location
+tmpFileMonInterfacePresentIter - temp file location
+tmpFileCurlIter - temp file location
+tmpFileMonRx - temp file location
+tmpFileMonRxIter - temp file location
+numOfIterationsInterface - number of times interface will be checked before a reboot occurs
+numOfIterationsCurl - number of times curl url will be checked before a reboot occurs
+numOfIterationsMonInterface - number of times monitor interface will be checked before a reboot occurs
+numOfIterationsMonRx - number of times monitor interface received bytes will be checked for changes before a reboot occurs

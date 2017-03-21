@@ -1,0 +1,25 @@
+#body{width: 1200px;margin: 0 auto}
+.margin{background-color: #494949;height: 65px}
+.logo{display: block;float: left;padding: 15px 50px 8px;margin-left: -20px;font-size: 20px}
+.header{list-style-type: none;margin: 0;padding: 0;overflow: hidden}
+li{float: left}
+li a:link,
+li a:visited{font-family: Arial;display: block;width: 130px;font-size: 17px;color: #FFFFFF;text-align: center;padding: 20px 2px 20px 2px;text-decoration: none}
+li a:hover,
+li a:active{color: #21B1BC}
+.footer{display: block;width: auto;height: 40px;padding: 15px;background: none repeat scroll 0% 0% #21B1BC}
+.footer span{color: #FFF;margin-top: 10px;font-size: 18px;float: right;font-weight: normal;font-family: Arial}
+.contact{margin-left: 14%;padding: 2%;line-height: 20px;font-size: 13px}
+#submit{margin-left: 50%}
+#header_form{padding-top: 20px;font-size: 25px;font-family: Arial;margin-left: 25%;color: #21B1BC}
+.form{font-family: Arial;font-size: 15px;letter-spacing: 1px;color: #494949;padding: 2% 40% 0% 10%}
+.form .table{margin-left: 25%}
+.form .table input{margin-left: 10px;margin-top:10px;width: 200px}
+#is_dhcp {width: auto;}
+#is_ntp {width: auto;}
+.form .table select{margin-left: 10px;margin-top:10px;width: 204px}
+.form .table form{border: solid}
+.form .table tr{margin:20px}
+.form .table td{margin:20px}
+.form .table > tbody > tr> td:nth-child(1){padding-left: 3em !important;padding-right: 1em !important}
+.form .table > tbody > tr> td:nth-child(2){padding-right: 1em !important;padding-left: 1em !important}

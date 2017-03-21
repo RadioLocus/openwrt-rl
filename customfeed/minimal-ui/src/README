@@ -1,0 +1,26 @@
+USAGE:
+
+This is the UI module for the sensor. This contains all the configuration webpages on the sensor
+
+The default password for this sensor is 'secretpass'.
+
+This in set in the post install script(resource/minimalui.ucidefs)
+
+This also contains the default password for ssh 'secretsshpass'
+
+The webserver being used is uHTTPD and is configured to run on 8000 port (again in resource/minimalui.ucidefs)
+
+The default password for config is secretconfigpass. To create your own password use
+
+uhttpd -m <password>
+
+and paste the new output in the configpass option
+
+ARCHITECTURE:
+
+The main file are copied into /www directory of the sensor
+
+the html pages are majorly rendered from /www/cgi-bin
+
+the webpages appended with '_process' are the backend scripts
+the webpages appended with '_config' render the frontend pages

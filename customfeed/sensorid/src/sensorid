@@ -1,0 +1,2 @@
+#!/bin/ash
+uci get sensorid.sensor.id

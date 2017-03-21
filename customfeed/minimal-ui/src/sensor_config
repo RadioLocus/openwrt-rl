@@ -1,0 +1,54 @@
+#!/bin/sh
+echo "Content-type: text/html"
+echo 
+curlingthreads=`uci get radiolocus.radiolocus.curlingthreads`
+maxtuplesinbatch=`uci get radiolocus.radiolocus.maxtuplesinbatch`
+echo '<html><head><title>Radiolocus</title><link href="../styles/style.css" rel="stylesheet" type="text/css"><link rel="icon" href="../images/favicon.ico" type="x-icon"></head>'
+
+echo '<body><div class="margin"><a href="http://radiolocus.com" target="http://radiolocus.com"><img src="../images/logo.png" class="logo"></a><ul class="header"><li><a href="./overview">Status</a></li><li><a href="./sensor_config">Sensor</a></li><li><a href="./wifi_config">Wi-Fi</a></li><li><a href="./3g_config">3G Dongle</a></li><li><a href="./ethernet_config">Ethernet</a></li><li><a href="./proxy_config">Proxy</a></li><li><a href="../contact.html">Contact</a></li></ul>' 
+echo '<div id="header_form">Configure Sensor</div>'
+
+  echo "<div class="form"><form method=GET action=\"./sensor_process\" onsubmit=\"return validateform()\">"\
+       '<table nowrapp="" class="table"><tbody>'\
+       '<tr><td>UUID</td><td><input type="text" id="uuid" name="val_uuid" size=50 value=""><input type="hidden" id="configpass"  name="val_configpass" value="none"></td></tr>'\
+       '<tr><td>SENSOR TOKEN</td><td><input type="text" id="sensortoken" name="val_sensortoken" size=50 value=""></td></tr>'\
+       '<tr><td>SERVER TOKEN</td><td><input type="text" id="servertoken" name="val_servertoken" size=50 value=""></td></tr>'\
+       '<tr><td>Disable SSH</td><td style="text-align: right"><input type="checkbox" id="is_ssh_disable" name="is_ssh_disable" value="Disable SSH?" onchange="SSHVerify();"><input type="hidden" id="sshdisable"  name="val_sshdisable" value="false"></td></tr>'\
+       '<tr><td>Modify Threads</td><td style="text-align: right"><input type="checkbox" id="is_thread" name="is_thread" value="thread" onchange="threadVerify();" ></td></tr>'\
+       "<tr><td>No of Threads</td><td><input type="text" id="threads" name="val_threads" size=12 value=\"$curlingthreads\" disabled></td></tr>"\
+       "<tr><td>No of Tuples in a Batch</td><td><input type="text" id="maxtuplesinbatch" name="val_batch" size=12 value=\"$maxtuplesinbatch\" disabled></td></tr>"\
+       '</tr></table>'
+
+
+  echo '<br/><br><div id="submit"><input type="submit" value="Save">'\
+       '<input type="reset" value="Reset"></div></form></div><br/>'
+
+   echo '<script>function threadVerify() {'\
+        'var dd = document.getElementById("is_thread").checked;'\
+        'if (dd == true){'\
+        'document.getElementById("threads").disabled=false;'\
+        'document.getElementById("maxtuplesinbatch").disabled=false;'\
+        '}else{'\
+        'document.getElementById("threads").disabled=true;'\
+        'document.getElementById("maxtuplesinbatch").disabled=true;'\
+        '}'\
+        '}'\
+        'function SSHVerify() {'\
+        'var dd = document.getElementById("is_ssh_disable").checked;'\
+        'if (dd == true){'\
+        'document.getElementById("sshdisable").value=true;'\
+        '}else{'\
+        'document.getElementById("sshdisable").value=false;'\
+        '}'\
+        '}'\
+        'function validateform() {'\
+        'var configpass = prompt("Please enter the config password","");'\
+        'if (configpass != null) {'\
+        '    document.getElementById("configpass").value ='\
+        '    configpass;'\
+        '}'\
+        '}'
+    echo '</script>'
+
+echo '<div><div class="footer" ><span>&#169; 2017 Radiolocus. All rights reserved.</span></div></div></div></div></body>'
+echo '</html>'

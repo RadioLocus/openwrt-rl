@@ -1,0 +1,49 @@
+CC = @CC@
+CFLAGS = -std=gnu99 @CFLAGS@
+CPPFLAGS = @CPPFLAGS@ @DEFS@
+INSTALL = @INSTALL@
+
+PREFIX = @prefix@
+EXEC_PREFIX = @exec_prefix@
+prefix = $(PREFIX)
+exec_prefix = $(EXEC_PREFIX)
+bindir = @bindir@
+datarootdir = @datarootdir@
+mandir = @mandir@
+
+BINS = tunnelit-p2p
+
+all: $(BINS)
+
+tunnelit-p2p: tunnelit-p2p.o ethertun.o net.o
+
+tunnelit-p2p.o: tunnelit-p2p.c ethertun.h tunnelit-helper.h tunnelit-common.h net.h config.h
+
+ethertun.o: ethertun.c ethertun.h
+
+net.c: net.h config.h
+
+clean:
+	rm -f *.o $(BINS)
+
+distclean: clean
+	rm -f Makefile config.h config.log config.status
+	rm -f *~
+	rm -rf autom4te.cache/
+
+mrproper: distclean
+	rm -f configure config.h.in
+
+install: $(BINS) tunnelit-p2p.8
+	$(INSTALL) -d "$(DESTDIR)$(bindir)"
+	$(INSTALL) -d "$(DESTDIR)$(mandir)"
+	$(INSTALL) $(BINS) "$(DESTDIR)$(bindir)"
+	$(INSTALL) tunnelit-p2p.8 "$(DESTDIR)$(mandir)"
+
+uninstall:
+	@for bin in $(BINS); do \
+		echo rm -f "$(DESTDIR)$(bindir)/$${bin}"; \
+		rm -f "$(DESTDIR)$(bindir)/$${bin}"; \
+	done
+
+.PHONY: all clean distclean mrproper install uninstall

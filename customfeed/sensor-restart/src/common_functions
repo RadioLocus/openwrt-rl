@@ -1,0 +1,350 @@
+#! /bin/ash
+#define variables for this file
+tempfile=/tmp/tempfile
+quiet=false
+
+
+#print info level messages if quiet is not true
+#input: message to be printed
+#output: message printed on console
+printInfo() {
+	
+	if [ $quiet != "true" ]
+	then			
+		echo "`date` INFO: $1"	
+	fi
+}
+
+#exit with failure message
+#input: exit message
+#output: exit shell
+exitWithFailure(){
+	echo "`date` ERROR: $1"
+	exit 1
+}
+
+#exit if the command returned error.
+#input: return value of the command, exit message
+#output: exit message printed on console and shell exits.
+exitIfCommandReturnedError() {
+
+	if [ $1 -gt 0 ] ;
+	then
+		exitWithFailure "$2" 
+	fi
+}
+
+
+#check if file exists or else exit
+#input: filePath
+#output: exit shell if file not present or do nothing
+exitIfFileDoesNotExist(){
+	
+	printInfo "exit if file $1 does not exist"
+	checkIfFileExists $1	
+	if [ $? -gt 0 ]
+	then
+        	exitWithFailure "$1 does not exist"
+	fi
+}
+
+#checks if the variable contains any value
+#input: value of the variable, variable name
+#output: exit if variable is empty otherwise do nothing.
+exitIfVariableIsEmpty(){
+
+	printInfo "exit if variable $2 is empty"
+	if [ "x$1" = "x" ];
+	then 
+		exitWithFailure	"$2 is empty"
+	fi
+
+}
+
+#checks if the file exists or not
+#input: filePath
+#output: 0 if file present, 1 if not present
+checkIfFileExists() {
+	
+	printInfo "checking if file $1 exists"
+	if [ -f $1 ]
+	then
+	   	return 0    
+	else
+	        printInfo "Input file $1 not found"
+       	        return 1
+	fi
+}
+
+#checks if the file exists or not
+#input: filePath
+#output: 0 if directory present, 1 if not present
+checkIfDirectoryExists() {
+
+        printInfo "checking if directory $1 exists"
+        if [ -d $1 ]
+        then
+                return 0
+        else
+                printInfo "Input directory $1 not found"
+                return 1
+        fi
+}
+
+
+
+#replaces place holders in the file
+#input: placeholder, value, filename
+#output: no output. Just changes the file.
+replaceVariableInFile(){
+	
+	printInfo "replacing $1 in $3 file with $2"
+	rm -rf ${tempfile}
+	touch ${tempfile}
+	sed 's|'"$1"'|'"$2"'|' $3 > ${tempfile}
+	exitIfCommandReturnedError $? "error occured while replacing $1 in $3 file with $2"
+	mv ${tempfile} $3
+	rm -rf ${tempfile}
+}
+
+
+#compare total input parameters with required parameters, exit if they dont match.
+#input: number of input parameters, total parameters expected
+#output: exit if values do not match.
+exitIfInputNotAvailable() {
+        if [ ! $1 -eq $2 ] ;
+        then
+                printUsage
+                exitWithFailure "input parameters [$1]  are not equal to required number of parameters [$2]"
+        fi
+}
+
+#copies file or directory to the given location
+#input: source location, destination location
+#output: exit if error occurs while copying, otherwise nothing.
+copyFileOrDirectoryToLocation() {
+
+	printInfo "createParentDirectory if required for path destination $2"
+	createParentDirectoryIfRequired $2
+	printInfo "copying file or directory $1 to $2"
+	cp -r $1 $2
+	exitIfCommandReturnedError $? "error occured while copying directory or file $1 to $2"
+
+}
+
+#get parent directory path and create directory if does not already exist
+#input: file or directory path path
+#output: no output. new directory created. exit if some error occured
+createParentDirectoryIfRequired() {
+
+	parentDirectoryPath=`dirname $1`
+	exitIfCommandReturnedError $? "getting parent directory path for caused error"
+	printInfo "directory path for $1 is $parentDirectoryPath"
+	createDirectoryIfDoesNotExist $parentDirectoryPath
+}
+
+
+#create directory
+#input: directory path
+#output: new directory created. creates directory with sudo if $2 equals 0 else creates without sudo. exit if some error occured
+createDirectoryIfDoesNotExist() {
+	printInfo "creating directory $1"
+	if [ ! -d $1 ];
+	then
+
+		if [ $2 -eq 0 ];
+		then
+			sudo mkdir -p $1
+			exitIfCommandReturnedError $? "error occured while creating direcory $1"
+		else
+			mkdir -p $1
+			exitIfCommandReturnedError $? "error occured while creating direcory $1"
+		fi
+	else
+	printInfo "Directory already Exists"
+	fi
+}
+
+#copy files
+#input: file path, of both source and destination
+#output: files copied to destination path. copies file with sudo if $3 equals 0, else copies without sudo. $4 contains -rpP parameter
+copyFiles() {
+
+	printInfo "Copying file $1 to $2"
+
+	if [ -z $4 ];
+	then
+		if [ $3 -eq 0 ];
+		then
+			sudo cp $1 $2
+			exitIfCommandReturnedError $? "Copy failed"
+		else
+			cp $1 $2
+			exitIfCommandReturnedError $? "Copy failed"
+		fi
+
+	else
+		if [ $3 -eq 0 ];
+		then
+                        sudo cp -$4 $1 $2
+                        exitIfCommandReturnedError $? "Copy failed"
+                else
+                        cp -$4 $1 $2
+                        exitIfCommandReturnedError $? "Copy failed"
+                fi
+	fi
+
+
+}
+
+
+#deletes a file or directory. Recursive delete.
+#input: path of file or directory
+#output: no output. Exit if error occured.
+deleteDirectoryOrFile() {
+
+	printInfo "delete file or directory at path $1. Recursive delete"
+	rm -rf $1
+	exitIfCommandReturnedError $? "error occured while deleting directory or file $1"
+
+}
+
+#delete all files under a directory, but not the directory.
+#input: path to the directory
+#output: no output. Exit if error occured.
+deleteAllFilesNoFolder() {
+	
+	printInfo "delete all files under directory at path $1"
+	find $1 -iname "*" -type f -delete
+	exitIfCommandReturnedError $? "error occured while deleting files under directory at path $1"
+
+}
+
+#merges two file and produces output in a third file
+#input: file1 , file2 , final output file
+#output: final output file generated
+mergePropsFile() {
+        printInfo "merging $1 with $2 to a new file $3"
+	cat $1 $2 > $3
+}
+
+#get the value of the key provided from the props file
+#input: file name, key name
+#output: value, empty string returned if key is not present in the file
+getValueFromPropsFile() {
+	
+	echo `cat $1 | grep ^$2= | sed 's/=/ /g' | awk '{print $2}'`
+
+}
+
+
+#check if the interface is present in the current system.
+#input: name of the interface
+#output: 0 if present, 1 otherwise
+checkIfInterfacePresent() {
+
+        printInfo "check if interface $1 is present"
+        checkIfDirectoryExists $networkDeviceBaseFolder/$1
+        if [ $? -eq 0 ];
+        then
+                printInfo "Interface $1 is present"
+                return 0
+        else
+                printInfo "Interface $1 is not present"
+                return 1
+        fi
+}
+
+#check if ping works
+#input: ping ip/domain
+#output: 0 if pinging, 1 otherwise
+checkIfPingWorks() {
+        ping -q -c5 $1 > /dev/null
+
+        if [ $? -eq 0 ]
+        then
+                printInfo "pinging $1"
+                return 0
+        else
+                printInfo "unable to ping $1"
+                return 1
+        fi
+}
+
+#check if curl
+#input: curl domain
+#output: 0 if up, 1 otherwise
+checkIfCurlWorks() {
+	wget -O /dev/null -q $1
+
+	if [ $? -eq 0 ]
+        then
+                printInfo "curl works for $1"
+                return 0
+        else
+                printInfo "unable to curl $1"
+                return 1
+        fi
+}
+
+	
+	
+
+#get total number of files present in the directory
+#input: path to the folder
+#output: total number of files
+getNumberOfFilesInDirectory() {
+
+	checkIfDirectoryExists $1
+	if [ $? -eq 0 ];
+	then
+		i=`ls -l $1 | wc -l`
+		i=$(( i-1 ))
+		return $i
+	else
+		exitWithFailure "Directory $1 does not exist"		
+	fi
+
+}
+
+#scp file to a server
+#input: sourceFile, serverIp, serverUser, serverPass, serverLoc
+#no output, exit if error.
+scpFile() {
+	
+	printInfo "scp sourceFile $1 to serverIp: $2 using serverUser: $3 and serverPass: $4 to serverLoc: $5"
+	exitIfFileDoesNotExist $1
+	sshpass -p $4 scp $1 $3@$2:$5
+	exitIfCommandReturnedError $? "error occured while scp sourceFile $1"
+	printInfo "source file $1 scp complete"
+}
+
+
+#sourceFile is $1, serverIp is in $2, UserName is in $3
+#password in $4 and location of server in $5, and $6 has the gpg encryption parameters
+ftpFile() {
+	
+	printInfo "ftp sourceFilev $1 to serverIp: $2 using serverUser: $3 and serverPass: $4 to serverLoc: $5"
+        exitIfFileDoesNotExist $1
+        filePath="$1"
+        fileName=$(basename "$1")
+	temp=${fileName##*.}
+
+        if [ $temp != "gpg" ];
+        then
+        gpg --recipient 3-name --keyring 3-pub --no-default-keyring --trust-model always --verbose --encrypt $filePath
+        echo "encrypted"
+        fi
+
+        if [ $temp = "gpg" ];	
+	then
+        ftp -v -in $2 << EOF
+        user $3 $4
+
+        put $filePath $fileName
+        bye
+EOF
+
+	fi
+}
+

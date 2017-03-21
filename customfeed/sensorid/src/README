@@ -1,0 +1,5 @@
+This is to configgure the sensorids and tokens. The default password for config is secretconfigpass. To create your own password use
+
+uhttpd -m <password>
+
+and paste the new output in the configpass option

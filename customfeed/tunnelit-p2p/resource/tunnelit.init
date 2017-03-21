@@ -1,0 +1,58 @@
+#!/bin/ash /etc/rc.common
+
+#
+# Copyright (C) 2015-2016 XXX
+#
+# The reproduction and distribution of this software without the written
+# consent of XXX is prohibited by the United States Copyright
+# Act and international treaties.
+#
+
+NAME=tunnelit-p2p
+PROG=tunnelit-p2p
+START=99
+STOP=99
+tunnelit_args=""
+pid_file="/var/run/${NAME}.pid"
+SERVICE_DAEMONIZE=1
+SERVICE_WRITE_PID=1
+SERVICE_PID_FILE="$pid_file"
+
+test()
+{
+    "$@" &> /dev/null
+    local status=$?
+    if [ $status -ne 0 ]; then
+        echo "error with $1" >&2
+	exit 1
+    fi
+    return $status
+}
+
+
+start()
+{
+        config_load "${NAME}"
+        config_get_bool disabled "general" disabled 0
+	test uci get tunnelit.tunnel.host
+	test uci get tunnelit.tunnel.port
+
+        if [ "$disabled" = "1" ]; then
+		echo "error in starting tunnelit-p2p" >&2
+                exit 0
+        fi
+	host=`uci get tunnelit.tunnel.host`
+	port=`uci get tunnelit.tunnel.port`
+	tunnelit_args="$host $port"
+
+	echo "starting service"
+        service_start /bin/${PROG} ${tunnelit_args}
+	return $status
+}
+
+stop()
+{
+        service_stop /bin/${PROG}
+}
+
+

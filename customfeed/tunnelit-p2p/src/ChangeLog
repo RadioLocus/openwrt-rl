@@ -1,0 +1,139 @@
+                         tunnelit 0.0.1.1514
+
+Release information:
+  pkg:  TunnelIt version 0.0.1.1514
+  url:  http://www.rkeene.org/devel/tunnelit-0.0.1.1514.tar.gz
+  date: Mon Aug 17 08:56:05 CDT 2009
+--------------------------------------------------------------------------
+
+Mon, 17 Aug 2009
+   * Added web-based man page
+   * 
+   * Documentation update:
+   *   - Fixed omision of "-p" option in help
+   *   - Added man page
+
+Wed,  5 Aug 2009
+   * Fixed pre-release script to try harder at building MIPS binaries
+   * 
+   * Fixed typo
+   * 
+   * Made default keep alive time 900s, and added documentation about feature
+   * 
+   * Updated idle timeout code slightly
+   * 
+   * Added timeout option to send keep-alives
+   * 
+   * Reorganized sending code 
+   * 
+   * Fixed typo in previous commit
+   * 
+   * Updated to strip resultant static binary
+
+Tue,  4 Aug 2009
+   * Updated to produce both static and uClibc linked MIPS binaries on build
+
+Mon,  3 Aug 2009
+   * Updated documentation to indicate the UDP mode only allows one client
+   * 
+   * Updated help text to give some examples
+   * 
+   * Updated header to be more nicely formatted
+   * 
+   * Moved refernces to default location of TUN kernel interface to platform
+   *   specific source files
+   * 
+   * Started 0.0.1.x line
+   * 
+   * Added explict license of MIT-style
+   * 
+   * Updated help text to indicate that UDP mode is indeed supported
+
+Sun,  2 Aug 2009
+   * Updated pre-release script to try harder at replacing version
+   * numbers everywhere
+   * 
+   * Updated to produce stripped MIPS binary
+   * 
+   * Fixed typo
+   * 
+   * Added support for building mipsel-linux-uclibc binaries on release
+   * 
+   * Updated non-debug messages to include trailing new line
+   * 
+   * Changed on-wire format to be raw packets with no headers
+   * 
+   * Added support for daemonization
+
+Sat,  1 Aug 2009
+   * Updated include guards
+   * 
+   * Updated UDP mode to reconnect faster
+   * 
+   * Updated UDP listener mode to restart listener on error
+   * 
+   * Corrected logic inversion
+   * 
+   * Fixed typo in previous commit
+   * 
+   * Updated UDP mode to never close socket
+   * 
+   * Added extra debugging for connect optimization
+   * 
+   * Added connect() call optimization
+   * 
+   * Updated error checking
+   * 
+   * Updated to not close UDP listener on errors
+   * 
+   * Implemented UDP mode
+   * 
+   * Added an option to specify path to TUN interface
+   * 
+   * Fixed output for printing version
+   * 
+   * Added basic README
+   * 
+   * Increased limits thanks to optimizations
+   * 
+   * Fixed issue with previous commit not allowing any clients to talk
+   * 
+   * Minor optimization to remove passing over unused portions of the child
+   * descriptors
+   * 
+   * Added explicit casts to avoid prototype issues.
+   * 
+   * Fixed bug where only one client could talk
+   * 
+   * Added additional debug messages
+   * 
+   * Fixed issue with reusing variable causing client drop-out
+   * 
+   * Fixed issue with previous commit
+   * 
+   * Updated debug messages
+   * 
+   * Fixed socket descriptor link if max clients reached
+   * 
+   * Consolidated deterministic read/write functions
+   * 
+   * Updated on-wire protocol to include packet length
+   * 
+   * Added an option to allow only one client to connect at a time
+   * 
+   * Added debug mode to configure options
+   * 
+   * Added install and uninstall Makefile targets
+   * 
+   * Updated TunnelIt to display correct version information
+   * 
+   * Added ChangeLog and normal header
+   * 
+   * Added tunnelit release build script
+   * 
+   * Updated header include guards
+   * 
+   * Updated tunnelit-p2p
+   * 
+   * Added tunnelit project
+

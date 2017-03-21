@@ -1,0 +1,49 @@
+#!/bin/ash
+echo "Adding to crontab"
+if [ ! -f /etc/crontabs/root ]; then
+    touch /etc/crontabs/root
+fi
+echo "removing existing crons for minimal-ui"
+sed -i '/ifconfig/d' /etc/crontabs/root
+echo "adding cron"
+echo '*/1 * * * * ifconfig eth0:0 add 192.168.51.253; ifconfig eth0:0 up;' >> /etc/crontabs/root
+/etc/init.d/cron reload
+echo "added cron"
+echo "removing useless wifi interface"
+ubus call uci get '{ "config": "wireless", "match": {"device":"radio0"} }'
+if [ $? -eq 0 ]; then
+ubus call uci get '{ "config": "wireless", "match": {"device":"radio0"} }' | grep \".name\" |awk '{print $2}' | awk -F',' '{print $1}' | awk -F'"' '{print $2}'| grep '^cfg' | awk '{system("uci delete wireless."$0)}'
+else
+uci delete wireless.@wifi-iface[0]
+fi
+uci commit wireless
+echo "removed useless wifi interface"
+echo "setting password for uhttpd server"
+uci set uhttpd.main.config=/etc/httpd.conf
+uci commit uhttpd
+echo '/:root:$1$$stmAa3iXQxI4jYtPrZgI./' > /etc/httpd.conf
+echo '
+PROXYIP=""
+PROXYPORT=""
+PROXYUSERNAME=""
+PROXYPASS=""
+
+if [[ -n "$PROXYIP" && -n "$PROXYPORT" && -n "$PROXYUSERNAME" && -n "$PROXYPASS" ]]; then
+        export http_proxy=http://$PROXYUSERNAME:$PROXYPASS@$PROXYIP:$PROXYPORT/
+        export https_proxy=http://$PROXYUSERNAME:$PROXYPASS@$PROXYIP:$PROXYPORT/
+        export ftp_proxy=http://$PROXYUSERNAME:$PROXYPASS@$PROXYIP:$PROXYPORT/
+        export socks_proxy=socks://$PROXYUSERNAME:$PROXYPASS@$PROXYIP:$PROXYPORT/
+elif [[ -n "$PROXYIP" && -n "$PROXYPORT" ]]; then
+        export http_proxy=http://$PROXYIP:$PROXYPORT/
+        export https_proxy=http://$PROXYIP:$PROXYPORT/
+        export ftp_proxy=http://$PROXYIP:$PROXYPORT/
+        export socks_proxy=socks://$PROXYIP:$PROXYPORT/
+fi
+' >> /etc/profile
+
+#this will be removed
+echo -e "secretsshpass\nsecretsshpass" | passwd root
+#running minimalui on port 8000
+uci delete uhttpd.main.listen_http
+uci add_list  uhttpd.main.listen_http='0.0.0.0:8000 [::]:8000'
+uci commit uhttpd

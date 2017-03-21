@@ -1,0 +1,185 @@
+#!/bin/ash
+
+commonFunctionsFile=`uci get sensor-restart.sensor.commonFunctionsFile`
+networkDeviceBaseFolder=`uci get sensor-restart.sensor.networkDeviceBaseFolder`
+interface=`uci get sensor-restart.sensor.interface`
+monInterface=`uci get sensor-restart.sensor.monInterface`
+curlServer=`uci get sensor-restart.sensor.curlServer`
+tmpFileInterfacePresentIter=`uci get sensor-restart.sensor.tmpFileInterfacePresentIter`
+tmpFileMonInterfacePresentIter=`uci get sensor-restart.sensor.tmpFileMonInterfacePresentIter`
+tmpFileCurlIter=`uci get sensor-restart.sensor.tmpFileCurlIter`
+tmpFileMonRx=`uci get sensor-restart.sensor.tmpFileMonRx`
+tmpFileMonRxIter=`uci get sensor-restart.sensor.tmpFileMonRxIter`
+numOfIterationsInterface=`uci get sensor-restart.sensor.numOfIterationsInterface`
+numOfIterationsCurl=`uci get sensor-restart.sensor.numOfIterationsCurl`
+numOfIterationsMonInterface=`uci get sensor-restart.sensor.numOfIterationsMonInterface`
+numOfIterationsMonRx=`uci get sensor-restart.sensor.numOfIterationsMonRx`
+
+. "$commonFunctionsFile"
+
+#input: no input
+#output: cleaning up local files.
+cleanup() {
+	
+	setValueInFile "0" "$tmpFileInterfacePresentIter"
+	setValueInFile "0" "$tmpFileMonInterfacePresentIter"
+	setValueInFile "0" "$tmpFileMonRxIter"
+	deleteDirectoryOrFile "$tmpFileInterfacePresentIter"
+	deleteDirectoryOrFile "$tmpFileMonInterfacePresentIter"
+	deleteDirectoryOrFile "$tmpFileMonRx"
+	deleteDirectoryOrFile "$tmpFileMonRxIter"
+}
+
+#input: message to be printed with reboot
+#output: message printed on console
+restartSensor() {
+	printInfo "Prepare to reboot: $1"
+	cleanup
+	sync
+	printInfo "rebooting"
+	# if machine hangs, it will restart because of watchdog, otherwise because of reboot command below.
+	reboot
+	exit
+}
+
+#input: value, file.
+#output: file set with that iteration value.
+setValueInFile() {
+	printInfo "set value: $1 in file: $2"
+	echo $1 > $2
+}
+
+#input: iteration file name
+#output: iteration incremented in the file.
+incrementIteration() {
+	checkIfFileExists $1	
+	if [ "$?" -eq "1" ];
+	then
+		setValueInFile "0" "$1"
+	else
+		printInfo "file: $1 exists"
+		printInfo "increment iteration in file: $1"
+       		iteration=`getValueFromFile $1`
+	        printInfo "currIteration: $iteration"
+       		iteration=$((iteration+1))
+	        printInfo "newIteration: $iteration"
+		setValueInFile $iteration "$1"
+	fi
+}
+
+#Input: fileName
+#Output: Value in the file
+getValueFromFile() {
+	echo `cat $1`
+}
+
+#input: iteration threshold, file name, restart message
+#output: no output, restarts sensor.
+restartIfIterationExceeded() {
+
+	printInfo "check if Iterations greater than $1 in file: $2"
+        iteration=`getValueFromFile $2`
+        printInfo "iteration: $iteration"
+        if [ $iteration -gt $1 ];
+        then
+        	restartSensor "iteration: $iteration greater than numOfIterations: $1 in file: $2"
+        fi
+
+}
+
+#input: interface, iteration file name
+#output: no output, resets iteration.
+resetIfInterfacePresent() {
+	checkIfInterfacePresent $1
+	if [ $? -eq 0 ];
+	then
+        	setValueInFile "0" "$2"
+
+	fi
+}
+
+#input: iteration file name
+#output: no output, resets iteration.
+resetIfPinging() {
+        checkIfPingWorks $pingServer
+        if [ $? -eq 0 ];
+        then
+                setValueInFile "0" "$1"
+
+        fi
+}
+
+
+#input: iteration file name
+#output: no output, resets iteration.
+resetIfCurling() {
+        checkIfCurlWorks $curlServer
+        if [ $? -eq 0 ];
+        then
+                setValueInFile "0" "$1"
+
+        fi
+}
+
+#Input: interface name
+#output: Rx Bytes
+getRxBytes(){
+	echo `/sbin/ifconfig $1 | grep 'RX bytes' | awk -F":" '{print $2}'| awk -F" " '{print $1}'`
+}
+
+#input: interface name, rx bytes file name, iteration file name
+#output: no output, iteration reset in file
+resetIterationIfActivity() {
+
+checkIfFileExists $2
+if [ "$?" -eq "1" ];
+then
+        printInfo "$2 not present. create new file and save present monrx"
+        monRx=`getRxBytes $1`
+        printInfo "monRx: $monRx"
+        setValueInFile "$monRx" "$2"
+	setValueInFile "0" "$3"
+else
+        printInfo "getting previous rx from $2"
+        prevMonRx=`getValueFromFile $2`
+        printInfo "prevMonRx: $prevMonRx"
+        printInfo "getting currMonRx"
+        currMonRx=`getRxBytes $1`
+        printInfo "currMonRx: $currMonRx"
+        setValueInFile "$currMonRx" "$2"
+        printInfo "check if currMonRx greater than prevMonRx for interface: $1"
+        if [ $currMonRx -gt $prevMonRx ];
+        then
+                printInfo "currMonRx: $currMonRx is greater than prevMonRx: $prevMonRx"
+	        setValueInFile "0" "$3"
+	fi
+fi
+
+}
+
+incrementIteration "$tmpFileInterfacePresentIter"
+incrementIteration "$tmpFileMonInterfacePresentIter"
+incrementIteration "$tmpFileCurlIter"
+
+
+restartIfIterationExceeded "$numOfIterationsCurl" "$tmpFileCurlIter"
+resetIfCurling "$tmpFileCurlIter"
+
+restartIfIterationExceeded "$numOfIterationsInterface" "$tmpFileInterfacePresentIter"
+resetIfInterfacePresent "$interface" "$tmpFileInterfacePresentIter"
+
+restartIfIterationExceeded "$numOfIterationsMonInterface" "$tmpFileMonInterfacePresentIter"
+resetIfInterfacePresent "$monInterface" "$tmpFileMonInterfacePresentIter"
+
+checkIfInterfacePresent $monInterface
+if [ $? -eq 0 ];
+then
+	incrementIteration "$tmpFileMonRxIter"
+	restartIfIterationExceeded "$numOfIterationsMonRx" "$tmpFileMonRxIter"
+	resetIterationIfActivity "$monInterface" "$tmpFileMonRx" "$tmpFileMonRxIter"
+fi
+
+printInfo "not restarting"
+sync
+
+

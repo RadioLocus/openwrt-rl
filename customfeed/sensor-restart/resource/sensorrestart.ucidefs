@@ -1,0 +1,12 @@
+#!/bin/ash
+echo "Adding to crontab"
+if [ ! -f /etc/crontabs/root ]; then
+        touch /etc/crontabs/root
+fi
+echo "removing existing crons for sensor-restart"
+sed -i '/sensor-restart/d' /etc/crontabs/root
+echo "adding cron"
+echo '*/3 * * * * . /etc/profile;sensor-restart' >> /etc/crontabs/root
+/etc/init.d/cron reload
+echo "added cron"
+

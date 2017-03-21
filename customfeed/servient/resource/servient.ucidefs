@@ -1,0 +1,17 @@
+#!/bin/ash
+
+echo "Adding to crontab"
+if [ ! -f /etc/crontabs/root ]; then
+        touch /etc/crontabs/root
+fi
+
+echo "removing existing crons for servient"
+sed -i '/servient/d' /etc/crontabs/root
+echo "adding cron"
+echo '*/30 * * * * /etc/init.d/servient start' >> /etc/crontabs/root
+/etc/init.d/cron reload
+echo "added cron"
+echo "updating certs"
+echo "export SSL_CERT_DIR=/etc/ssl/certs" >> /etc/profile
+#changing customfeed repo TODO: Find a better way to do this
+sed -i -e 's/http:\/\/downloads.openwrt.org\/barrier_breaker\/14.07\/ar71xx\/generic\/packages\/customfeed/http:\/\/repo.radiolocus.com\/customfeed/g' /etc/opkg.conf

@@ -1,0 +1,22 @@
+#!/bin/sh
+echo 'Content-type: text/html'
+echo
+echo "<html><head><title>Radiolocus</title><link href="../styles/style.css" rel="stylesheet" type="text/css"><link rel="icon" href="../images/favicon.ico" type="x-icon"></head>"
+echo '<body><div id="body"><div class="margin"><a href="http://radiolocus.com" target="http://radiolocus.com"><img src="../images/logo.png" class="logo"></a><ul class="header"><li><a href="./overview">Status</a></li><li><a href="./sensor_config">Sensor</a></li><li><a href="./wifi_config">Wi-Fi</a></li><li><a href="./3g_config">3G Dongle</a></li><li><a href="./ethernet_config">Ethernet</a></li> <li><a href="./proxy_config">Proxy</a></li><<li><a href="../contact.html">Contact</a></li></ul>'
+
+  echo "<div id=\"header_form\">Configure Proxy</div><div class=\"form\"><form method=GET action=\"./proxy_process\" onsubmit=\"return validateform()\">"\
+       '<table nowrap="" class="table"><tbody>'\
+          '<tr><td>Proxy Server IP</td><td><input type="text" id="proxyip" name="val_proxyip" size=12 value=""></td></tr>'\
+          '<tr><td>Proxy Port</td><td><input type="text" id="proxyport" name="val_proxyport" size=12 value=""></td></tr>'\
+          '<tr><td>Proxy Username</td><td><input type="text" id="proxyusername" name="val_proxyusername" size=12 value=""></td></tr>'\
+          '<tr><td>Proxy Password</td><td><input type="text" id="proxypassword" name="val_proxypassword" size=12 value=""></td>'
+  echo '</tr></tbody></table>'
+  echo '<br/><br><div id="submit"><input type="submit" value="Save">'\
+       '<input type="reset" value="Reset"></div></form></div><br/>'
+echo '<div><div class="footer" ><span>&#169; 2017 Radiolocus. All rights reserved.</span></div> </div></div> </div> </body>'
+echo '<script>function validateform() {'\
+       'document.getElementById("proxyip").value = encodeURI(document.getElementById("proxyip").value);'\
+       'document.getElementById("proxyusername").value = encodeURI(document.getElementById("proxyusername").value);'\
+       'document.getElementById("proxypassword").value = encodeURI(document.getElementById("proxypassword").value);'\
+       '}</script>'
+echo '</html>'

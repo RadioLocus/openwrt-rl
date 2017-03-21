@@ -1,0 +1,74 @@
+CONFIG OPTIONS:
+
+channel_url - backend url
+channel_sleep -sleep before conecting once again
+keepalive_url - 
+exit_status_url- url to send status to server
+monit_url - monit url
+rpc_timeout - maximum allowable time for executor in keepalive thread
+sslselfsigned - allow or disallow selfsigned certs for https
+aliveTimeInterval - will stop servient after aliveTimeInterval secs if idle
+max_curl_count - number of times curl request will be made
+keepalive_sleep - keepalive_sleep no of seconds the thread will sleep after making the request
+exit_status_sleep - sleep for exit_status_sleep secs after sending exit status
+
+ --------------------------------------------------------------------------------------------
+
+ ADDING CONFIG OPTION TO SERVIENT
+
+ 1. add to resource/servient.cfg
+     option exampleoption 'x'
+
+ 2. add to sniffex.c in struct my_optmap radiolocus_options[]
+     {
+             .map = {
+                     UCIMAP_OPTION(struct uci_rl, exampleoption),
+                     .type = UCIMAP_INT,
+                     .name = "exampleoption",
+             }
+     },
+
+ 3. add to servient.c in list_for_each(q, &rls)
+     sprintf(dev,"%d",rl->exampleoption);
+
+ 4. add to ucitest.h in struct uci_servient
+     int exampleoption;
+
+---------------------------------------------------------------------------------------------
+
+This module will run the commands sent from the sensor-remote-dashboard on the device bash
+
+**IMPORTANT**
+
+Test the commands on a test sensor before you use it on production sensors
+
+---------------------------------------------------------------------------------------------
+FLOW
+
+the main function contains gathering all the configurations
+
+after that there is a fork, where the parent (fork() > 0) makes a  curl request to connect the sensor to the server
+the output of this request(sse output) is passed via the pipe (dup system call) to the child process
+in the child process the output is checked for its validity if its a command or just a heartbeat
+Here, its checked if the remote token matches and that the command is coming from a legitimate source
+after this, there are 2 threads
+1. keepalive thread
+2. executor thread
+
+keepalive thread: this thread will check if the maximum allowed time for executor thread
+is reached. If this timeout, a failure is sent to the server.
+
+executor thread: this thread simply executes the command
+
+---------------------------------------------------------------------------------------------
+POINTS TO NOTE
+
+1. to check if servient is working do the following
+ps | grep servient
+
+you should see 2 processes
+
+2. servient will kill itself if there is no command that comes within the aliveTimeInterval.
+It will come back up based in the restart interval that is set in cron
+
+3. make sure that the correct certs are added for https if the url/certifying authority changes. They are added at the time of installation, check the MAKEFILE for more details

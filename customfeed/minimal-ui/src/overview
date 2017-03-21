@@ -1,0 +1,134 @@
+#!/bin/sh
+
+command_executor() {
+    command_op=`$@` 
+    local status=$? 
+    if [ $status -ne 0 ]; then
+        echo "error with $1" >&2
+        echo "not configured"
+    fi                          
+    echo "$command_op"          
+}
+echo "Content-type: text/html"
+echo 
+echo '<html><head><title>Radiolocus</title><link href="../styles/style.css" rel="stylesheet" type="text/css"><link rel="icon" href="../images/favicon.ico" type="x-icon"></head>'
+
+echo '<body><div class="margin"><a href="http://radiolocus.com" target="http://radiolocus.com"><img src="../images/logo.png" class="logo"></a><ul class="header"><li><a href="./overview">Status</a></li><li><a href="./sensor_config">Sensor</a></li><li><a href="./wifi_config">Wi-Fi</a></li><li><a href="./3g_config">3G Dongle</a></li><li><a href="./ethernet_config">Ethernet</a></li> <li><a href="./proxy_config">Proxy</a></li><li><a href="../contact.html">Contact</a></li></ul>'
+
+  echo '<script>function keyVerify() {'\
+        'var dd = document.getElementById("enc_type").value;'\
+        'if (dd == "none"){'\
+        'document.getElementById("key").disabled=true;'\
+        '}else{'\
+        'document.getElementById("key").disabled=false;'\
+        '}'\
+        '}'\
+        'function dhcpVerify() {'\
+        'var dd = document.getElementById("is_dhcp").checked;'\
+        'if (dd == false){'\
+        'document.getElementById("ipaddr").disabled=false;'\
+        'document.getElementById("netmask").disabled=false;'\
+        'document.getElementById("gateway").disabled=false;'\
+        '}else{'\
+        'document.getElementById("ipaddr").disabled=true;'\
+        'document.getElementById("netmask").disabled=true;'\
+        'document.getElementById("gateway").disabled=true;'\
+        '}'\
+        '}</script>'
+  echo '<div id="header_form">Wi-Fi Status</div><div class="form">'
+  echo "<form method=GET action=\"./wifi_config\">"\
+       '<table nowrap="" class="table"><tbody>'\
+          "<tr><td>SSID</TD><TD>`command_executor uci get wireless.internet.ssid`</td></tr>"\
+          "<tr><td>Encryption Type</TD><TD>`command_executor uci get wireless.internet.encryption`</td>"\
+          "<tr><td>Key</td><td>`command_executor uci get wireless.internet.key`</td></tr>"\
+          '<tr><td>IP Assignment?'\
+          "</td><td>`command_executor uci get network.wwan.proto`</td></tr>"\
+          "<tr><td>IP Address</td><td>`command_executor uci get network.wwan.ipaddr`</td></tr>"\
+          "<tr><td>Netmask</td><td>`command_executor uci get network.wwan.netmask`</td></tr>"\
+          "<tr><td>Gateway</td><td>`command_executor uci get network.wwan.gateway`</td>"\
+          '</tr></tbody></table>'
+
+
+
+  echo '<br>'\
+       '</form></div>'
+
+  echo '<div id="header_form">3G Status</div><div class="form">'
+  echo "<form method=GET action=\"./3g_config\">"\
+       '<table nowrap="" class="table"><tbody>'\
+          "<tr><td>APN</TD><TD>`command_executor uci get network.wan.apn`</td></tr>"\
+          "<tr><td>Pincode</TD><TD>`command_executor uci get network.wan.pincode`</td>"\
+          "<tr><td>Service</td><td>`command_executor uci get network.wan.service`</td></tr>"\
+          "<tr><td>Device</td><td>`command_executor uci get network.wan.device`</td></tr>"\
+          "<tr><td>Username</td><td>`command_executor uci get network.wan.username`</td></tr>"\
+          "<tr><td>Password</td><td>`command_executor uci get network.wan.password`</td>"\
+          "<tr><td>Max-wait</td><td>`command_executor uci get network.wan.maxwait`</td>"\
+          "<tr><td>Default Route</td><td>`command_executor uci get network.wan.password`</td>"\
+          '</tr></tbody></table>'
+
+
+
+  echo '<br>'\
+       '</form></div>'
+  echo '<div id="header_form">Ethernet Status</div><div class="form">'
+  echo "<form method=GET action=\"./ethernet_config\">"\
+       '<table nowrap="" class="table"><tbody>'\
+          '<tr><td>IP Assignment?'\
+          "</td><td>`command_executor uci get network.wan.proto`</td></tr>"\
+          "<tr><td>IP Address</td><td>`command_executor uci get network.wan.ipaddr`</td></tr>"\
+          "<tr><td>Netmask</td><td>`command_executor uci get network.wan.netmask`</td></tr>"\
+          "<tr><td>Gateway</td><td>`command_executor uci get network.wan.gateway`</td>"\
+          '</tr></tbody></table>'
+
+
+
+  echo '<br>'\
+       '</form></div>'
+
+  echo '<div id="header_form">Proxy Status</div><div class="form">'
+  echo "<form method=GET action=\"./proxy_config\">"\
+       '<table nowrap="" class="table"><tbody>'\
+          '<tr><td>Proxy IP'\
+          "</td><td>`sed -n '/PROXYIP=/p' /etc/profile| awk -F'=' '{print $2}'`</td></tr>"\
+          "<tr><td>Proxy Port</td><td>`sed -n '/PROXYPORT=/p' /etc/profile| awk -F'=' '{print $2}'`</td></tr>"\
+          "<tr><td>Proxy Username</td><td>`sed -n '/PROXYUSERNAME=/p' /etc/profile| awk -F'=' '{print $2}'`</td></tr>"\
+          "<tr><td>Proxy Password</td><td>`sed -n '/PROXYPASS=/p' /etc/profile| awk -F'=' '{print $2}'`</td>"\
+          '</tr></tbody></table>'
+
+
+
+  echo '<br>'\
+       '</form></div><br/><br/>'
+
+  echo '<div id="header_form">Sensor Status</div><div class="form">'
+  echo "<form method=GET action=\"./proxy_config\">"\
+       '<table nowrap="" class="table"><tbody>'\
+          '<tr><td>Interfaces status'\
+          "</td><td><pre>"
+  #ifconfig -a | grep 'br-lan\|wlan\|eth\|internet\|lo\|inet'
+  ifconfig -a | grep 'br-lan\|wlan\|eth\|internet\|lo\|inet'
+  echo "</pre></td></tr>"\
+       '<tr><td>Route status'\
+       "</td><td><pre>"
+  route -n
+  echo "</pre></td></tr>"\
+       "<tr><td>Time on the sensor is </td><td>`date`</td></tr>"\
+       "<tr><td>Sensor ID</td><td>`sensorid`</td></tr>"\
+       "<tr><td>Sniffex status</td><td>"
+
+#########testing sniffex###########
+SNIFFEX_OUTPUT=`. /etc/profile>/dev/null;timeout 20 sniffex| grep success`
+
+if [ -n "$SNIFFEX_OUTPUT" ]; then
+  SNIFFEX_RESULT="sniffex works"
+else
+  SNIFFEX_RESULT="sniffex does not work"
+fi
+  echo "$SNIFFEX_RESULT</td>"\
+          '</tr></tbody></table>'
+  echo '<br>'\
+       '</form></div><br/><br/>'
+
+echo '<div><div class="footer" ><span>&#169; 2017 Radiolocus. All rights reserved.</span></div></div></div></div></body>'
+echo '</html>'
+
