@@ -143,6 +143,8 @@ void *hcithread_method(void *arg) {
 	write_inquiry_mode_cp wicp;
 	struct timeval tv;
 	char tuple[1000];
+	evt_le_meta_event * meta_event;
+	le_advertising_info * info;
 
 	Configuration* conf = (Configuration * ) args;
 	int dbmsignal_limit = conf->dbmsignal_limit;
@@ -166,6 +168,7 @@ void *hcithread_method(void *arg) {
 
 	hci_filter_clear(&flt);
 	hci_filter_set_ptype(HCI_EVENT_PKT, &flt);
+	hci_filter_set_event(EVT_LE_META_EVENT, &flt);
 	hci_filter_set_event(EVT_INQUIRY_RESULT_WITH_RSSI, &flt);
 	hci_filter_set_event(EVT_INQUIRY_COMPLETE, &flt);
 	if (setsockopt(dd, SOL_HCI, HCI_FILTER, &flt, sizeof(flt)) < 0) {
@@ -193,6 +196,41 @@ void *hcithread_method(void *arg) {
 			ptr = buf + (1 + HCI_EVENT_HDR_SIZE);
 			len -= (1 + HCI_EVENT_HDR_SIZE);
 			switch (hdr->evt) {
+			case EVT_LE_META_EVENT:
+				meta_event = (evt_le_meta_event*) ptr;
+				if (meta_event->subevent == EVT_LE_ADVERTISING_REPORT) {
+					uint8_t reports_count = meta_event->data[0];
+					void * offset = meta_event->data + 1;
+					while (reports_count--) {
+						info = (le_advertising_info*)offset;
+						struct bdaddr_t sa = &info->bdaddr;
+						int rssi = info->rssi;
+						if (rssi > dbmsignal_limit) {
+							gettimeofday(&tv, NULL);
+							if (sensor_tupleversion == 1) {
+								conf->tuplecounter++;
+								char float_str[25];
+								sprintf(float_str,"%ld.%.6ld", tv.tv_sec, tv.tv_usec);
+								double d_timestamp = string_to_double(float_str);
+								d_timestamp = d_timestamp * 1000;
+								d_timestamp = floor(d_timestamp)/ 1000;
+								long l_timestamp = (long) d_timestamp;
+								int timestamp = l_timestamp; /// 1000;
+								int normalized_ts = get_normalized_time(timestamp, timenormalizer);
+								// generating the key
+								sprintf(totp_key_str,"%s%s%d", sensor_token, sensor_id, tuplecounter / seqinterval );
+								totp = generateTOTPUsingTimestamp(totp_key_str, 8, normalized_ts);
+								sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%02x:%02x:%02x:%02x:%02x:%02x,%d,%s,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, sa[0], sa[1], sa[2], sa[3], sa[4], sa[5], rssi, ssid, sensor_customflag, totp);
+							} else {
+								printf("Unsupported tupleversion");
+								exit(1);
+							}
+							enqueue(queue, tuple, 0);
+						}
+						offset = info->data + info->length + 2;
+					}
+				}
+				break;
 			case EVT_INQUIRY_RESULT_WITH_RSSI:
 				uint8_t num = buf[0];
 				for (i = 0; i < num; i++) {
