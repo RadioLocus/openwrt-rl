@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
+#include <time.h>
+#include <bluetooth/bluetooth.h>
+#include <bluetooth/hci.h>
+#include <bluetooth/hci_lib.h>
 
 #include "metrics.h"
 #include "prober.h"

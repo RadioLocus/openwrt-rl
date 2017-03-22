@@ -1,6 +1,6 @@
 # build helloworld executable when user executes "make"
 sniffex: sniffex.o commonFunctions.o probe_enqueuer.o queue.o radiotap-parser.o curler.o metrics.o ucitest.o totp.o
-	$(CC) $(LDFLAGS) sniffex.o queue.o radiotap-parser.o commonFunctions.o probe_enqueuer.o curler.o metrics.o ucitest.o totp.o -o sniffex -lm -lpcap -lcurl -ljson-c -lpthread -luci -lucimap -lpolarssl
+	$(CC) $(LDFLAGS) sniffex.o queue.o radiotap-parser.o commonFunctions.o probe_enqueuer.o curler.o metrics.o ucitest.o totp.o -o sniffex -lm -lpcap -lcurl -ljson-c -lpthread -luci -lucimap -lpolarssl -lbluetooth
 sniffex.o: sniffex.c
 	$(CC) $(CFLAGS) -c sniffex.c -g
 commonFunctions.o: commonFunctions.c
