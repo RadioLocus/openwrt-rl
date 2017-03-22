@@ -117,6 +117,8 @@ void *tuplesender_method(void *arg)
 }
 
 void begin_inquiry(int dd) {
+	int err;
+
 	inquiry_cp icp;
 	memset (&icp, 0, sizeof(icp));
 	icp.lap[2] = 0x9e;
