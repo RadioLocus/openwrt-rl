@@ -136,12 +136,12 @@ void begin_inquiry(int dd) {
 	}
 }
 
-void *hcithread_method(void *arg) {
+void *hcithread_method(void *args) {
 	struct pollfd fd;
 	unsigned char buf[HCI_MAX_EVENT_SIZE], *ptr;
 	hci_event_hdr *hdr;
 	struct hci_filter flt;
-	int i, totp;
+	int i, totp, len;
 	write_inquiry_mode_cp wicp;
 	struct timeval tv;
 	char tuple[1000], totp_key_str[200];
@@ -179,7 +179,6 @@ void *hcithread_method(void *arg) {
 	}
 	
 	/*send command inquiry mode with rssi result*/
-	write_inquiry_mode_cp wicp;
 	wicp.mode = 0x01;
 	hci_send_cmd(dd, OGF_HOST_CTL, OCF_WRITE_INQUIRY_MODE, WRITE_INQUIRY_MODE_RP_SIZE, &wicp);
 
@@ -188,7 +187,7 @@ void *hcithread_method(void *arg) {
 	fd.revents = 0;
 
 	while(1) {
-		if(poll(fd, 1, -1) > 0) {
+		if(poll(&fd, 1, -1) > 0) {
 			len = read(dd, buf, sizeof(buf));
 			if (len < 0)
 				continue;
