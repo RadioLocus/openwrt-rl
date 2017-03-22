@@ -33,7 +33,7 @@ include $(INCLUDE_DIR)/package.mk
 # The variables defined here should be self explanatory.
 define Package/blu-sniffex
 	SECTION:=utils
-	DEPENDS:=+libpcap +libuci +libcurl +sensorid +libjson-c +libpthread +libpolarssl
+	DEPENDS:=+libpcap +libuci +libcurl +sensorid +libjson-c +libpthread +libpolarssl +libbluetooth
 	CATEGORY:=Utilities
 	TITLE:=Sniffex -- prints a snarky message
 endef
