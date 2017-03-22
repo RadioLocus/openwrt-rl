@@ -19,7 +19,7 @@
 include $(TOPDIR)/rules.mk
 
 # Name and release number of this package
-PKG_NAME:=sniffex-ssl
+PKG_NAME:=blu-sniffex
 PKG_RELEASE:=1
 
 # This specifies the directory where we're going to build the program.
@@ -31,7 +31,7 @@ include $(INCLUDE_DIR)/package.mk
 
 # Specify package information for this program.
 # The variables defined here should be self explanatory.
-define Package/sniffex-ssl
+define Package/blu-sniffex
 	SECTION:=utils
 	DEPENDS:=+libpcap +libuci +libcurl +sensorid +libjson-c +libpthread +libpolarssl
 	CATEGORY:=Utilities
@@ -59,18 +59,18 @@ endef
 # directory if it does not already exist.  Likewise $(INSTALL_BIN) contains the
 # command to copy the binary file from its current location (in our case the build
 # directory) to the install directory.
-define Package/sniffex-ssl/install
+define Package/blu-sniffex/install
 	$(INSTALL_DIR) $(1)/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/sniffex $(1)/bin/
 	$(INSTALL_DIR) $(1)/etc/config
-	$(INSTALL_CONF) ./resource/radiolocus.cfg $(1)/etc/config/radiolocus
+	$(INSTALL_CONF) ./resource/bluetooth.cfg $(1)/etc/config/bluetooth
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./resource/sniffex.init $(1)/etc/init.d/sniffex
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
 	$(INSTALL_CONF) ./resource/sniffex.ucidefs $(1)/etc/uci-defaults/99_add_sniffex_ucidefs
 endef
 
-define Package/sniffex-ssl/postinst
+define Package/blu-sniffex/postinst
 	#!/bin/sh
 	# check if we are on real system
 	if [ -z "$${IPKG_INSTROOT}" ]; then
@@ -80,7 +80,7 @@ fi
 exit 0
 endef
 
-define Package/sniffex-ssl/prerm
+define Package/blu-sniffex/prerm
 	#!/bin/sh
 	# check if we are on real system
 	if [ -z "$${IPKG_INSTROOT}" ]; then
@@ -105,4 +105,4 @@ endef
 # The above define directives specify all the information needed, but this
 # line calls BuildPackage which in turn actually uses this information to
 # build a package.
-$(eval $(call BuildPackage,sniffex-ssl))
+$(eval $(call BuildPackage,blu-sniffex))
