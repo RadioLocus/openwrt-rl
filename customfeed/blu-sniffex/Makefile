@@ -19,7 +19,7 @@
 include $(TOPDIR)/rules.mk
 
 # Name and release number of this package
-PKG_NAME:=blu-sniffex
+PKG_NAME:=blu_sniffex
 PKG_RELEASE:=1
 
 # This specifies the directory where we're going to build the program.
@@ -31,7 +31,7 @@ include $(INCLUDE_DIR)/package.mk
 
 # Specify package information for this program.
 # The variables defined here should be self explanatory.
-define Package/blu-sniffex
+define Package/blu_sniffex
 	SECTION:=utils
 	DEPENDS:=+libpcap +libuci +libcurl +sensorid +libjson-c +libpthread +libpolarssl +bluez-daemon +bluez-libs +bluez-utils
 	CATEGORY:=Utilities
@@ -59,7 +59,7 @@ endef
 # directory if it does not already exist.  Likewise $(INSTALL_BIN) contains the
 # command to copy the binary file from its current location (in our case the build
 # directory) to the install directory.
-define Package/blu-sniffex/install
+define Package/blu_sniffex/install
 	$(INSTALL_DIR) $(1)/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/blu_sniffex $(1)/bin/
 	$(INSTALL_DIR) $(1)/etc/config
@@ -70,7 +70,7 @@ define Package/blu-sniffex/install
 	$(INSTALL_CONF) ./resource/sniffex.ucidefs $(1)/etc/uci-defaults/99_add_sniffex_ucidefs
 endef
 
-define Package/blu-sniffex/postinst
+define Package/blu_sniffex/postinst
 	#!/bin/sh
 	# check if we are on real system
 	if [ -z "$${IPKG_INSTROOT}" ]; then
@@ -80,7 +80,7 @@ fi
 exit 0
 endef
 
-define Package/blu-sniffex/prerm
+define Package/blu_sniffex/prerm
 	#!/bin/sh
 	# check if we are on real system
 	if [ -z "$${IPKG_INSTROOT}" ]; then
@@ -105,4 +105,4 @@ endef
 # The above define directives specify all the information needed, but this
 # line calls BuildPackage which in turn actually uses this information to
 # build a package.
-$(eval $(call BuildPackage,blu-sniffex))
+$(eval $(call BuildPackage,blu_sniffex))

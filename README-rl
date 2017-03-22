@@ -106,6 +106,14 @@ vi /etc/config/wireless
 	delete the following lines:
 	        # REMOVE THIS LINE TO ENABLE WIFI:
 	        option disabled 1
+
+            config wifi-iface
+                option device   radio0
+                option network  lan
+                option mode     ap
+                option ssid     OpenWrt
+                option encryption none
+
 	add the following lines at the bottom
 		config wifi-iface 'internet'
 			option ifname 'internet'
@@ -135,7 +143,8 @@ edit opkg.conf
 vi /etc/opkg.conf
 Add line
 	src/gz customfeed-v2 http://repo.radiolocus.com/customfeed-v2
-    src/gz packages http://downloads.openwrt.org/snapshots/trunk/ar71xx/generic/packages/packages
+	src/gz packages http://downloads.openwrt.org/snapshots/trunk/ar71xx/generic/packages/packages
+        src/gz luci http://downloads.openwrt.org/snapshots/trunk/ar71xx/generic/packages/luci
 
 
 -- Update packages
@@ -147,9 +156,19 @@ opkg install <package-name>
 
 opkg install sensorid
 
-opkg install uhttpd uhttpd-mod-ubus
+opkg install luci
+opkg install coreutils-timeout
+opkg install curl
+opkg install wget
+opkg install bluez-daemon
+opkg install bluez-libs
+opkg install bluez-utils
+
+rm -rf /www/index.html
 opkg install minimal-ui
-configure sensorid & internet
+
+internet might be deleted from configuration files
+configure sensorid & internet using the UI
 
 opkg install sniffex-ssl
 opkg install alerts
@@ -171,3 +190,6 @@ vi /etc/config/network
 under config interface 'lan', change ipaddr to
         option ipaddr '192.168.50.1'
 
+-- configure internet using minimal-ui
+-- set mac address of interface
+-- change ssh, ui and config passwords
