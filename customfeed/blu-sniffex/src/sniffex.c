@@ -117,6 +117,8 @@ void *tuplesender_method(void *arg)
 }
 
 void begin_inquiry(int dd) {
+	int err;
+
 	inquiry_cp icp;
 	memset (&icp, 0, sizeof(icp));
 	icp.lap[2] = 0x9e;
@@ -133,14 +135,11 @@ void begin_inquiry(int dd) {
 }
 
 void *hcithread_method(void *arg) {
-	int dbmsignal_limit = *(args->dbmsignal_limit);
-	struct Queue* queue = (struct Queue*)args->queue;
-
 	struct pollfd fd;
 	unsigned char buf[HCI_MAX_EVENT_SIZE], *ptr;
 	hci_event_hdr *hdr;
 	struct hci_filter flt;
-	int i;
+	int i, totp;
 	write_inquiry_mode_cp wicp;
 	struct timeval tv;
 	char tuple[1000];
@@ -195,10 +194,9 @@ void *hcithread_method(void *arg) {
 			len -= (1 + HCI_EVENT_HDR_SIZE);
 			switch (hdr->evt) {
 			case EVT_INQUIRY_RESULT_WITH_RSSI:
-				inquiry_info *info;
 				uint8_t num = buf[0];
 				for (i = 0; i < num; i++) {
-					info = (void *) buf + (sizeof(*info) * i) + 1;
+					inquiry_info_with_rssi *info = (void *) buf + (sizeof(*info) * i) + 1;
 					struct bdaddr_t sa = &info->bdaddr;
 					int rssi = info->rssi;
 					if (rss > dbmsignal_limit) {
