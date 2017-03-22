@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
+#include <sys/poll.h>
+#include <sys/socket.h>
 #include <time.h>
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
@@ -142,7 +144,7 @@ void *hcithread_method(void *arg) {
 	int i, totp;
 	write_inquiry_mode_cp wicp;
 	struct timeval tv;
-	char tuple[1000];
+	char tuple[1000], totp_key_str[200];
 	evt_le_meta_event * meta_event;
 	le_advertising_info * info;
 
@@ -220,7 +222,7 @@ void *hcithread_method(void *arg) {
 								// generating the key
 								sprintf(totp_key_str,"%s%s%d", sensor_token, sensor_id, tuplecounter / seqinterval );
 								totp = generateTOTPUsingTimestamp(totp_key_str, 8, normalized_ts);
-								sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%02x:%02x:%02x:%02x:%02x:%02x,%d,%s,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, sa[0], sa[1], sa[2], sa[3], sa[4], sa[5], rssi, ssid, sensor_customflag, totp);
+								sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%02x:%02x:%02x:%02x:%02x:%02x,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, sa[0], sa[1], sa[2], sa[3], sa[4], sa[5], rssi, sensor_customflag, totp);
 							} else {
 								printf("Unsupported tupleversion");
 								exit(1);
@@ -237,7 +239,7 @@ void *hcithread_method(void *arg) {
 					inquiry_info_with_rssi *info = (void *) buf + (sizeof(*info) * i) + 1;
 					struct bdaddr_t sa = &info->bdaddr;
 					int rssi = info->rssi;
-					if (rss > dbmsignal_limit) {
+					if (rssi > dbmsignal_limit) {
 						gettimeofday(&tv, NULL);
 						if (sensor_tupleversion == 1) {
 							conf->tuplecounter++;
@@ -252,7 +254,7 @@ void *hcithread_method(void *arg) {
 							// generating the key
 							sprintf(totp_key_str,"%s%s%d", sensor_token, sensor_id, tuplecounter / seqinterval );
 							totp = generateTOTPUsingTimestamp(totp_key_str, 8, normalized_ts);
-							sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%02x:%02x:%02x:%02x:%02x:%02x,%d,%s,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, sa[0], sa[1], sa[2], sa[3], sa[4], sa[5], rssi, ssid, sensor_customflag, totp);
+							sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%02x:%02x:%02x:%02x:%02x:%02x,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, sa[0], sa[1], sa[2], sa[3], sa[4], sa[5], rssi, sensor_customflag, totp);
 						} else {
 							printf("Unsupported tupleversion");
 							exit(1);
