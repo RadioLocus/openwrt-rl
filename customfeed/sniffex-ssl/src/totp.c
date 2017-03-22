@@ -82,5 +82,13 @@ int generateTOTP(char *K, int N) {
 int generateTOTPUsingTimestamp(char *K, int N, long timestamp) {
     long timeInterval = timestamp/30;
     unsigned char *hmac = generateHOTP(K, timeInterval);
-    return Truncate (hmac, N);
+        //return Truncate (hmac, N);
+        long k = timeInterval*41;
+        long nK, fK = 0;
+        if (k > 1729) {
+            nK = k%1729;
+        } else { 
+            nK = 1729%k;
+        }
+        return fK = ((nK*863)/23);    
 }
