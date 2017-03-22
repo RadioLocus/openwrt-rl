@@ -163,7 +163,6 @@ void *hcithread_method(void *args) {
 
 	int dev_id = hci_get_route(NULL);
 	int dd = hci_open_dev(dev_id);
-
 	if (dd < 0) {
 		printf("Can't open HCI device");
 		exit(1);
@@ -189,6 +188,7 @@ void *hcithread_method(void *args) {
 
 	while(1) {
 		if(poll(&fd, 1, -1) > 0) {
+			printf("Received data on socket");
 			len = read(dd, buf, sizeof(buf));
 			if (len < 0)
 				continue;
@@ -199,6 +199,7 @@ void *hcithread_method(void *args) {
 			len -= (1 + HCI_EVENT_HDR_SIZE);
 			switch (hdr->evt) {
 			case EVT_LE_META_EVENT:
+				printf("Received le_meta_event");
 				meta_event = (evt_le_meta_event*) ptr;
 				if (meta_event->subevent == EVT_LE_ADVERTISING_REPORT) {
 					reports_count = meta_event->data[0];
@@ -235,6 +236,7 @@ void *hcithread_method(void *args) {
 				}
 				break;
 			case EVT_INQUIRY_RESULT_WITH_RSSI:
+				printf("Received inquiry info with rssi");
 				num = buf[0];
 				for (i = 0; i < num; i++) {
 					inquiry_info_with_rssi *info = (void *) buf + (sizeof(*info) * i) + 1;
@@ -266,6 +268,7 @@ void *hcithread_method(void *args) {
 				}
 				break;
 			case EVT_INQUIRY_COMPLETE:
+				printf("received inquiry complete");
 				// maybe add some sleep here
 				begin_inquiry(dd);
 				break;
