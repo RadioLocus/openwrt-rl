@@ -1,0 +1,141 @@
+-- Create directory if does not exist
+sudo mkdir -p /code/git
+sudo chown -R <user>:<group> /code/git
+cd /code/git
+
+-- Clone the repo
+git clone git@github.com:RadioLocus/openwrt-rl.git
+
+-- Checkout branch
+cd openwrt-rl
+git checkout -b rl.bluetooth remotes/origin/rl.bluetooth
+
+-- Copy minimal configuration
+cp openwrt_minimal_config .config
+
+-- Compile the kernel
+Compiling will not work on centOS because centOS base toolchain version is old.
+
+Download required libraries for your OS as per the following link:
+https://wiki.openwrt.org/doc/howto/buildroot.exigence
+
+make -j<num_threads> [V=s]
+
+-- Flash firmware on tplink device
+Fresh tp link device
+	Follow steps as per the document
+
+Existing radiolocus device
+	copy firmware to /tmp/ on the device
+	mtd write /tmp/openwrt-ar71xx-generic-tl-mr3020-v1-squashfs-factory.bin firmware
+	reboot && exit
+
+Login to the device
+	ssh root@192.168.1.1 -- Should login without a password
+
+-- Create extfs overlay
+Follow steps from "Partitioning the USB drive"
+https://fixmynix.com/configuring-extroot-with-openwrt-on-tp-link-mr-3220/
+
+For fresh usb drive
+	Format the usb drive with a 200mb ext4 partition.
+For already formatted for overlay
+	Mount and delete everything from /mnt/
+
+Connect the usb drive to the device.
+Find out the device-id by running ls /dev
+
+mount /dev/<deviceid> /mnt
+tar -C /overlay/ -c . -f - | tar -C /mnt/ -xf -
+sync && umount /dev/<deviceid>
+block detect > /etc/config/fstab
+
+Set the target to /overlay, and change the option enabled line from 0 to 1.
+vi /etc/config/fstab
+
+Enable the fstab service at startup
+/etc/init.d/fstab enable
+readlink -f /etc/rc.d/*fstab -- should print file /etc/init.d/fstab
+reboot && exit
+
+Login again
+ssh root@192.168.1.1
+Check file system size using df -h
+Should be approximately 200MB
+
+----------------------------------------------------------------------
+
+-- create customfeed - This will be part of repo and will not be required to be done by everyone.
+copy customfeed from barrier-breaker
+Use libjson-c instead of libjson in Makefile
+Import json-c/json.h instead of json/json.h
+Import json-c/json_tokener.h instead of json/json_tokener.h
+
+-- compile customfeed -- only if changes in code
+Edit feeds.conf.default file to add customfeed, add line
+src-link customfeed <path-to-repo>/customfeed
+
+./scripts/feed update -a
+./scripts/feeds install -a -p customfeed
+make menuconfig
+select alerts, minimal-ui, sensorid, servient, sniffex-ssl, sensor-restart in utilities
+
+
+-- log into repo machine i.e. repo.radiolocus.com currently pointing to testdashboard.radiolocus.com
+rm -rf ~/opkg-utils/customfeed-v2/*
+
+-- scp new packages to repo machine
+scp ./bin/ar71xx/packages/customfeed/* ec2-user@testdashboard.radiolocus.com:~/opkg-utils/customfeed-v2/
+
+-- on repo machine copy packages to /var/www/html/customfeed-v2
+sudo cp -a ~/opkg-utils/customfeed-v2 /var/www/html/
+sudo chown -R root:root /var/www/html/customfeed-v2
+
+
+-------------------------------------------------------------------------------------
+
+-- setup internet on sensor to download packages
+
+login to the sensor
+vi /etc/config/wireless
+	delete the following lines:
+	        # REMOVE THIS LINE TO ENABLE WIFI:
+	        option disabled 1
+	add the following lines at the bottom
+		config wifi-iface 'internet'
+			option ifname 'internet'
+			option network 'wwan'
+			option encryption 'psk-mixed'
+			option device 'radio0'
+			option mode 'sta'
+			option ssid '<ssid>'
+			option key '<password>'
+
+
+vi /etc/config/network
+	add the following lines
+		config interface 'wwan'
+			option ifname 'internet'
+			option proto 'dhcp'
+
+uci commit network
+uci commit wireless
+wifi
+
+Check if internet is connected - takes two minutes
+ping google.com
+
+-- run on sensor
+edit opkg.conf
+vi /etc/opkg.conf
+Add line
+	src/gz customfeed-v2 http://repo.radiolocus.com/customfeed-v2
+
+
+-- Update packages
+opkg update
+
+-- Install packages
+opkg install <package-name>
+
+
