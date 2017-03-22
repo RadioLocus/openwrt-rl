@@ -204,8 +204,8 @@ void *hcithread_method(void *args) {
 					void * offset = meta_event->data + 1;
 					while (reports_count--) {
 						info = (le_advertising_info*)offset;
-						struct bdaddr_t sa = &info->bdaddr;
-						int rssi = info->rssi;
+						bdaddr_t sa = &info->bdaddr;
+						int rssi = (int)info->data[info->length];
 						if (rssi > dbmsignal_limit) {
 							gettimeofday(&tv, NULL);
 							if (sensor_tupleversion == 1) {
@@ -236,7 +236,7 @@ void *hcithread_method(void *args) {
 				uint8_t num = buf[0];
 				for (i = 0; i < num; i++) {
 					inquiry_info_with_rssi *info = (void *) buf + (sizeof(*info) * i) + 1;
-					struct bdaddr_t sa = &info->bdaddr;
+					bdaddr_t sa = &info->bdaddr;
 					int rssi = info->rssi;
 					if (rssi > dbmsignal_limit) {
 						gettimeofday(&tv, NULL);
