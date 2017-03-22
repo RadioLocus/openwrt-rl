@@ -133,9 +133,6 @@ void begin_inquiry(int dd) {
 }
 
 void *hcithread_method(void *arg) {
-	int dbmsignal_limit = *(args->dbmsignal_limit);
-	struct Queue* queue = (struct Queue*)args->queue;
-
 	struct pollfd fd;
 	unsigned char buf[HCI_MAX_EVENT_SIZE], *ptr;
 	hci_event_hdr *hdr;
