@@ -147,6 +147,7 @@ void *hcithread_method(void *args) {
 	char tuple[1000], totp_key_str[200];
 	evt_le_meta_event * meta_event;
 	le_advertising_info * info;
+	uint8_t num, reports_count;
 
 	Configuration* conf = (Configuration * ) args;
 	int dbmsignal_limit = conf->dbmsignal_limit;
@@ -200,11 +201,12 @@ void *hcithread_method(void *args) {
 			case EVT_LE_META_EVENT:
 				meta_event = (evt_le_meta_event*) ptr;
 				if (meta_event->subevent == EVT_LE_ADVERTISING_REPORT) {
-					uint8_t reports_count = meta_event->data[0];
+					reports_count = meta_event->data[0];
 					void * offset = meta_event->data + 1;
 					while (reports_count--) {
 						info = (le_advertising_info*)offset;
-						bdaddr_t sa = &info->bdaddr;
+						char addr[18];
+						ba2str(&(info->bdaddr), addr);
 						int rssi = (int)info->data[info->length];
 						if (rssi > dbmsignal_limit) {
 							gettimeofday(&tv, NULL);
@@ -221,7 +223,7 @@ void *hcithread_method(void *args) {
 								// generating the key
 								sprintf(totp_key_str,"%s%s%d", sensor_token, sensor_id, tuplecounter / seqinterval );
 								totp = generateTOTPUsingTimestamp(totp_key_str, 8, normalized_ts);
-								sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%02x:%02x:%02x:%02x:%02x:%02x,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, sa[0], sa[1], sa[2], sa[3], sa[4], sa[5], rssi, sensor_customflag, totp);
+								sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%s,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, addr, rssi, sensor_customflag, totp);
 							} else {
 								printf("Unsupported tupleversion");
 								exit(1);
@@ -233,10 +235,11 @@ void *hcithread_method(void *args) {
 				}
 				break;
 			case EVT_INQUIRY_RESULT_WITH_RSSI:
-				uint8_t num = buf[0];
+				num = buf[0];
 				for (i = 0; i < num; i++) {
 					inquiry_info_with_rssi *info = (void *) buf + (sizeof(*info) * i) + 1;
-					bdaddr_t sa = &info->bdaddr;
+					char addr[18];
+					ba2str(&(info->bdaddr), addr);
 					int rssi = info->rssi;
 					if (rssi > dbmsignal_limit) {
 						gettimeofday(&tv, NULL);
@@ -253,7 +256,7 @@ void *hcithread_method(void *args) {
 							// generating the key
 							sprintf(totp_key_str,"%s%s%d", sensor_token, sensor_id, tuplecounter / seqinterval );
 							totp = generateTOTPUsingTimestamp(totp_key_str, 8, normalized_ts);
-							sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%02x:%02x:%02x:%02x:%02x:%02x,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, sa[0], sa[1], sa[2], sa[3], sa[4], sa[5], rssi, sensor_customflag, totp);
+							sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%s,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, addr, rssi, sensor_customflag, totp);
 						} else {
 							printf("Unsupported tupleversion");
 							exit(1);
