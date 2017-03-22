@@ -8,8 +8,8 @@
 # Act and international treaties.
 #
 
-NAME=sniffex
-PROG=sniffex
+NAME=blu_sniffex
+PROG=blu_sniffex
 START=99
 STOP=99
 sniffex_args=""

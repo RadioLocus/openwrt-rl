@@ -61,11 +61,11 @@ endef
 # directory) to the install directory.
 define Package/blu-sniffex/install
 	$(INSTALL_DIR) $(1)/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/sniffex $(1)/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/blu_sniffex $(1)/bin/
 	$(INSTALL_DIR) $(1)/etc/config
-	$(INSTALL_CONF) ./resource/bluetooth.cfg $(1)/etc/config/bluetooth
+	$(INSTALL_CONF) ./resource/bluetooth.cfg $(1)/etc/config/blu_radiolocus
 	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) ./resource/sniffex.init $(1)/etc/init.d/sniffex
+	$(INSTALL_BIN) ./resource/sniffex.init $(1)/etc/init.d/blu_sniffex
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
 	$(INSTALL_CONF) ./resource/sniffex.ucidefs $(1)/etc/uci-defaults/99_add_sniffex_ucidefs
 endef
@@ -84,7 +84,7 @@ define Package/blu-sniffex/prerm
 	#!/bin/sh
 	# check if we are on real system
 	if [ -z "$${IPKG_INSTROOT}" ]; then
-		/etc/init.d/sniffex stop
+		/etc/init.d/blu_sniffex stop
 		echo "Remove sniffex from crontab"
 		sed -i '/sniffex/d' /etc/crontabs/root
 		echo "Removing monitor interface"
