@@ -1,0 +1,81 @@
+INTRO:
+
+This module is used to send data to the server.
+
+CONFIG OPTIONS:
+url - url to be used
+moniturl - monitoring url to be used
+tupleversion - set the tupleversion
+seqinterval - sequence interval usesd to normalize
+timenormalizer - seconds to normalize with
+totptimeinterval - 
+tupleinterval - tupleinterval
+curlingthreads - no of threads to send data to the servers
+maxtuplesinbatch - no of tuples that can be sent together in a single request
+badpacketslimit - maximum number of ill formed packets after which device reboots
+badpacketstimerlimit - amount of time for which bad packets can be allowed
+dbmsignallimit - tuples with signal strength lower than this will be considered as bad signals
+moninf - monit interface
+
+also make sure that the configs in /etc/config/sensorid is complete
+
+--------------------------------------------------------------------------------------------
+
+ADDING CONFIG OPTION TO SNIFFEX
+
+1. add to resource/radiolocus.cfg
+    option exampleoption 'x'
+
+2. add to sniffex.c in struct my_optmap radiolocus_options[]
+    {
+            .map = {
+                    UCIMAP_OPTION(struct uci_rl, exampleoption),
+                    .type = UCIMAP_INT,
+                    .name = "exampleoption",
+            }
+    },
+
+3. add to sniffex.c in list_for_each(q, &rls)
+    sprintf(dev,"%d",rl->exampleoption);
+
+4. add to ucitest.h in struct uci_rl
+    int exampleoption;
+
+--------------------------------------------------------------------------------------------
+
+BASICS
+
+This will send the probe requests(captured by the monit interface) and send them to the server. It also sends metrics to monitoring server(graphite). As of now, it only sends the DROPCOUNT
+
+the probe requests of version 3 is collected in the following format
+ tupleversion,sensorid,tuplecounter,timestamp,MAC address,signal strength, SSID,customflag
+
+the probe requests of version 4 is collected in the following format
+ tupleversion,sensorid,tuplecounter,queuesize,timestamp,MAC address,signal strength, SSID,customflag,totp
+
+ARCHITECTURE
+
+1. The tuple is generated in got_pkg and is then enqueued. There are multiple consumer threads(see curlingthreads in config) which consume the tuples from the queue.
+2. The tuple, when gets dropped(not able to send to server due to whatever reason), goes to the end of the queue and this keeps on happening whenever there is such a drop case
+3. If the queue becomes full, the older tuple is discarded ie. these dropped tuples are not inserted into the queue anymore
+
+
+
+TOTP:
+please check generateTOTPUsingTimestamp
+
+the key being used for totp is
+    ("%s%s%d", sensor_token, sensor_id, tuplecounter / seqinterval )
+the timestamp is normalised by using the formula, where timestamp is the actual timestamp and timenormalizer as of now is 30 secs (see config)
+    (timestamp / timenormalizer) * timenormalizer
+the number of digits in the otp is 8
+
+
+FLOW
+the main function in sniffex.c fetched all the configurations
+it then starts multiple threads
+1.  tTupleSender thread- this thread has a tuplesender_method which sennds the tuple to the server after reading it from the queue. check the tuplesender_method in sniffex.c for the code to send the tuple
+2. tPcapThread thread - this thread get the tuple using libpcap and writes it into the queue. Check the got_pkg function in probe_enqueuer.c for the code
+
+
+

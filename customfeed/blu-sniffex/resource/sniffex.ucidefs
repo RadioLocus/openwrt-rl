@@ -1,0 +1,24 @@
+#!/bin/ash
+
+echo "Adding to crontab"
+if [ ! -f /etc/crontabs/root ]; then
+        touch /etc/crontabs/root
+fi
+echo "adding monitor interface"
+uci delete wireless.radio0.disabled
+uci set wireless.mon0=wifi-iface
+uci set wireless.mon0.mode=monitor
+uci set wireless.mon0.device=radio0
+uci set wireless.mon0.hidden='1'
+uci set wireless.mon0.network=lan
+uci set wireless.mon0.ifname=mon0
+uci commit wireless
+echo "added monitor interface"
+echo "removing existing crons for sniffex"
+sed -i '/sniffex/d' /etc/crontabs/root
+echo "adding cron"
+echo '*/1 * * * * . /etc/profile;/etc/init.d/sniffex start' >> /etc/crontabs/root
+/etc/init.d/cron reload
+echo "added cron"
+echo "restarting wifi"
+wifi down;wifi up
