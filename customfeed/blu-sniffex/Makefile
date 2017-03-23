@@ -76,8 +76,8 @@ define Package/blu_sniffex/postinst
 	if [ -z "$${IPKG_INSTROOT}" ]; then
 		(. /etc/uci-defaults/99_add_blu_sniffex_ucidefs)
 		rm -f /etc/uci-defaults/99_add_blu_sniffex_ucidefs
-fi
-exit 0
+	fi
+	exit 0
 endef
 
 define Package/blu_sniffex/prerm
@@ -90,7 +90,7 @@ define Package/blu_sniffex/prerm
 		echo "closing hci device"
 		hciconfig hci0 down
 	fi
-exit 0
+	exit 0
 endef
 
 # This line executes the necessary commands to compile our program.

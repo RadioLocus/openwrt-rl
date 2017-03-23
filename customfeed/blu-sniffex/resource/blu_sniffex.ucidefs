@@ -10,5 +10,5 @@ echo "adding cron"
 echo '*/1 * * * * . /etc/profile;/etc/init.d/blu_sniffex start' >> /etc/crontabs/root
 /etc/init.d/cron reload
 echo "added cron"
-echo "open hci device"
+echo "opening hci device"
 hciconfig hci0 up
