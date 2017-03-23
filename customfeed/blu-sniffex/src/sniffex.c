@@ -595,14 +595,13 @@ int main(int argc, char **argv)
 	ucimap_init(&bluetooth_map);
 	ucimap_init(&sensorid_map);
 
-
 	if ((argc >= 2) && !strcmp(argv[1], "-s")) {
 		uci_set_savedir(ctx, "./test/save");
 		set = true;
 	}
 
 	uci_set_confdir(ctx, "/etc/config");
-	uci_load(ctx, "blu_radiolocus", &pkg1);
+	uci_load(ctx, "bluetooth", &pkg1);
 	uci_load(ctx1, "sensorid", &pkg2);
 
 	ucimap_parse(&bluetooth_map, pkg1);
