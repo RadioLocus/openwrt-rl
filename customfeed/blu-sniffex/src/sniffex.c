@@ -205,7 +205,7 @@ void *hcithread_method(void *arg) {
         spinq_cp.min_period = htobs(10);
         spinq_cp.length     = 8;
         spinq_cp.num_rsp    = 0;
-        struct hci_request spinq_rq = get_hci_request(OGF_LINK_CTL, OCF_PERIODIC_INQUIRY, PERIODIC_INQUIRY_CP_SIZE, &status, &scan_params_cp);
+        struct hci_request spinq_rq = get_hci_request(OGF_LINK_CTL, OCF_PERIODIC_INQUIRY, PERIODIC_INQUIRY_CP_SIZE, &status, &spinq_cp);
         ret = hci_send_req(dd, &spinq_rq, 1000);
         if (ret < 0) {
                 hci_close_dev(dd);
