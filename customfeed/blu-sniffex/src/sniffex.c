@@ -354,11 +354,11 @@ void *hcithread_method(void *arg) {
 
 struct list_head rls;
 struct list_head sidls;
-struct uci_sectionmap bluetooth;
+struct uci_sectionmap blu_radiolocus;
 struct uci_sectionmap sensorid;
 
 int
-bluetooth_add_interface(struct uci_map *map, void *section)
+blu_radiolocus_add_interface(struct uci_map *map, void *section)
 {
         struct uci_rl *rl = section;
 
@@ -395,7 +395,7 @@ struct my_optmap sensorid_options[] = {
         }
 };
 
-struct my_optmap bluetooth_options[] = {
+struct my_optmap blu_radiolocus_options[] = {
         {
                 .map = {
                         UCIMAP_OPTION(struct uci_rl, tupleversion),
@@ -500,14 +500,14 @@ struct my_optmap bluetooth_options[] = {
         }
 };
 
-struct uci_sectionmap bluetooth = {
+struct uci_sectionmap blu_radiolocus = {
         UCIMAP_SECTION(struct uci_rl, map),
-        .type = "bluetooth",
-        .alloc = bluetooth_allocate,
-        .init = bluetooth_init_interface,
-        .add = bluetooth_add_interface,
-        .options = &bluetooth_options[0].map,
-        .n_options = ARRAY_SIZE(bluetooth_options),
+        .type = "blu_radiolocus",
+        .alloc = blu_radiolocus_allocate,
+        .init = blu_radiolocus_init_interface,
+        .add = blu_radiolocus_add_interface,
+        .options = &blu_radiolocus_options[0].map,
+        .n_options = ARRAY_SIZE(blu_radiolocus_options),
         .options_size = sizeof(struct my_optmap)
 };
 
@@ -522,8 +522,8 @@ struct uci_sectionmap sensorid = {
         .options_size = sizeof(struct my_optmap)
 };
 
-struct uci_sectionmap *bluetooth_smap[] = {
-        &bluetooth,
+struct uci_sectionmap *blu_radiolocus_smap[] = {
+        &blu_radiolocus,
 };
 
 struct uci_sectionmap *sensorid_smap[] = {
@@ -531,9 +531,9 @@ struct uci_sectionmap *sensorid_smap[] = {
 };
 
 
-struct uci_map bluetooth_map = {
-        .sections = bluetooth_smap,
-        .n_sections = ARRAY_SIZE(bluetooth_smap),
+struct uci_map blu_radiolocus_map = {
+        .sections = blu_radiolocus_smap,
+        .n_sections = ARRAY_SIZE(blu_radiolocus_smap),
 };
 
 struct uci_map sensorid_map = {
@@ -597,7 +597,7 @@ int main(int argc, char **argv)
 	INIT_LIST_HEAD(&sidls);
 	ctx = uci_alloc_context();
 	ctx1 = uci_alloc_context();
-	ucimap_init(&bluetooth_map);
+	ucimap_init(&blu_radiolocus_map);
 	ucimap_init(&sensorid_map);
 
 	if ((argc >= 2) && !strcmp(argv[1], "-s")) {
@@ -606,10 +606,10 @@ int main(int argc, char **argv)
 	}
 
 	uci_set_confdir(ctx, "/etc/config");
-	uci_load(ctx, "bluetooth", &pkg1);
+	uci_load(ctx, "blu_radiolocus", &pkg1);
 	uci_load(ctx1, "sensorid", &pkg2);
 
-	ucimap_parse(&bluetooth_map, pkg1);
+	ucimap_parse(&blu_radiolocus_map, pkg1);
 	ucimap_parse(&sensorid_map, pkg2);
 
 	list_for_each(q, &rls) {
@@ -639,7 +639,7 @@ int main(int argc, char **argv)
 
 	sprintf(server_url, "%s/%s", url1, sensor_id);
 	sprintf(monitserver_url, "%s/%s", moniturl1, sensor_id);
-	ucimap_cleanup(&bluetooth_map);
+	ucimap_cleanup(&blu_radiolocus_map);
 	ucimap_cleanup(&sensorid_map);
 	uci_free_context(ctx);
 	uci_free_context(ctx1);

@@ -43,9 +43,9 @@ struct my_optmap {
 int network_parse_ip(void *section, struct uci_optmap *om, union ucimap_data *data, const char *str);
 int network_format_ip(void *section, struct uci_optmap *om, union ucimap_data *data, char **str);
 void network_free_ip(void *section, struct uci_optmap *om, void *ptr);
-int bluetooth_init_interface(struct uci_map *map, void *section, struct uci_section *s);
-int bluetooth_add_interface(struct uci_map *map, void *section);
-struct ucimap_section_data *bluetooth_allocate(struct uci_map *map, struct uci_sectionmap *sm, struct uci_section *s);
+int blu_radiolocus_init_interface(struct uci_map *map, void *section, struct uci_section *s);
+int blu_radiolocus_add_interface(struct uci_map *map, void *section);
+struct ucimap_section_data *blu_radiolocus_allocate(struct uci_map *map, struct uci_sectionmap *sm, struct uci_section *s);
 int sensorid_init_interface(struct uci_map *map, void *section, struct uci_section *s);
 int sensorid_add_interface(struct uci_map *map, void *section);
 struct ucimap_section_data *sensorid_allocate(struct uci_map *map, struct uci_sectionmap *sm, struct uci_section *s);

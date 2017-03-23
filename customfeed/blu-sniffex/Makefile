@@ -63,19 +63,19 @@ define Package/blu_sniffex/install
 	$(INSTALL_DIR) $(1)/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/blu_sniffex $(1)/bin/
 	$(INSTALL_DIR) $(1)/etc/config
-	$(INSTALL_CONF) ./resource/bluetooth.cfg $(1)/etc/config/blu_radiolocus
+	$(INSTALL_CONF) ./resource/blu_radiolocus.cfg $(1)/etc/config/blu_radiolocus
 	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) ./resource/sniffex.init $(1)/etc/init.d/blu_sniffex
+	$(INSTALL_BIN) ./resource/blu_sniffex.init $(1)/etc/init.d/blu_sniffex
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
-	$(INSTALL_CONF) ./resource/sniffex.ucidefs $(1)/etc/uci-defaults/99_add_sniffex_ucidefs
+	$(INSTALL_CONF) ./resource/blu_sniffex.ucidefs $(1)/etc/uci-defaults/99_add_blu_sniffex_ucidefs
 endef
 
 define Package/blu_sniffex/postinst
 	#!/bin/sh
 	# check if we are on real system
 	if [ -z "$${IPKG_INSTROOT}" ]; then
-		(. /etc/uci-defaults/99_add_sniffex_ucidefs)
-		rm -f /etc/uci-defaults/99_add_sniffex_ucidefs
+		(. /etc/uci-defaults/99_add_blu_sniffex_ucidefs)
+		rm -f /etc/uci-defaults/99_add_blu_sniffex_ucidefs
 fi
 exit 0
 endef
@@ -86,7 +86,7 @@ define Package/blu_sniffex/prerm
 	if [ -z "$${IPKG_INSTROOT}" ]; then
 		/etc/init.d/blu_sniffex stop
 		echo "Remove sniffex from crontab"
-		sed -i '/sniffex/d' /etc/crontabs/root
+		sed -i '/blu_sniffex/d' /etc/crontabs/root
 		echo "Removing monitor interface"
 		uci delete wireless.mon0.mode
 		uci delete wireless.mon0.device

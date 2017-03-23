@@ -34,12 +34,12 @@ start()
 {
         config_load "${NAME}"
         config_get_bool disabled "general" disabled 0
-	test uci get radiolocus.@radiolocus[0].url
-	test uci get radiolocus.@radiolocus[0].moniturl
-	test uci get radiolocus.@radiolocus[0].tupleversion
-	test uci get radiolocus.@radiolocus[0].curlingthreads
-	test uci get radiolocus.@radiolocus[0].maxtuplesinbatch
-	test uci get radiolocus.@radiolocus[0].moninf
+	test uci get blu_radiolocus.@blu_radiolocus[0].url
+	test uci get blu_radiolocus.@blu_radiolocus[0].moniturl
+	test uci get blu_radiolocus.@blu_radiolocus[0].tupleversion
+	test uci get blu_radiolocus.@blu_radiolocus[0].curlingthreads
+	test uci get blu_radiolocus.@blu_radiolocus[0].maxtuplesinbatch
+	test uci get blu_radiolocus.@blu_radiolocus[0].moninf
 
         if [ "$disabled" = "1" ]; then
 		echo "error in starting sniffex" >&2

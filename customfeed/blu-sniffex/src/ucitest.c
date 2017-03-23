@@ -62,7 +62,7 @@ network_free_ip(void *section, struct uci_optmap *om, void *ptr)
 }
 
 int
-bluetooth_init_interface(struct uci_map *map, void *section, struct uci_section *s)
+blu_radiolocus_init_interface(struct uci_map *map, void *section, struct uci_section *s)
 {
 	struct uci_rl *rl = section;
 
@@ -72,7 +72,7 @@ bluetooth_init_interface(struct uci_map *map, void *section, struct uci_section 
 
 
 struct ucimap_section_data *
-bluetooth_allocate(struct uci_map *map, struct uci_sectionmap *sm, struct uci_section *s)
+blu_radiolocus_allocate(struct uci_map *map, struct uci_sectionmap *sm, struct uci_section *s)
 {
 	struct uci_rl *p = malloc(sizeof(struct uci_rl));
 	memset(p, 0, sizeof(struct uci_rl));
