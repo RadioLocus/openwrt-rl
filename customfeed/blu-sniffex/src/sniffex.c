@@ -135,11 +135,11 @@ void begin_inquiry(int dd) {
 	}
 }
 
-struct hci_request ble_hci_request(uint16_t ocf, int clen, void * status, void * cparam)
+struct hci_request get_hci_request(uint16_t ogf, uint16_t ocf, int clen, void * status, void * cparam)
 {
 	struct hci_request rq;
 	memset(&rq, 0, sizeof(rq));
-	rq.ogf = OGF_LE_CTL;
+	rq.ogf = ogf;
 	rq.ocf = ocf;
 	rq.cparam = cparam;
 	rq.clen = clen;
@@ -176,6 +176,7 @@ void *hcithread_method(void *arg) {
 	evt_le_meta_event * meta_event;
 	le_advertising_info * info;
 	uint8_t num, reports_count;
+        uint8_t lap[3] = { 0x33, 0x8b, 0x9e };
 	
 	int dev_id = hci_get_route(NULL);
 	int dd = hci_open_dev(dev_id);
@@ -195,18 +196,24 @@ void *hcithread_method(void *arg) {
 		printf("Can't set HCI filter\n");
 		exit(1);
 	}
-	
-	/*send command inquiry mode with rssi result*/
-	write_inquiry_mode_cp wicp;
-	wicp.mode = 0x01;
-	ret = hci_send_cmd(dd, OGF_HOST_CTL, OCF_WRITE_INQUIRY_MODE, WRITE_INQUIRY_MODE_RP_SIZE, &wicp);
+
+	/*initiate periodic inquiry*/
+	periodic_inquiry_cp spinq_cp;
+        memset(&spinq_cp, 0, sizeof(spinq_cp));
+        memcpy(spinq_cp.lap, lap, 3);
+        spinq_cp.max_period = htobs(16);
+        spinq_cp.min_period = htobs(10);
+        spinq_cp.length     = 8;
+        spinq_cp.num_rsp    = 0;
+        struct hci_request spinq_rq = get_hci_request(OGF_LINK_CTL, OCF_PERIODIC_INQUIRY, PERIODIC_INQUIRY_CP_SIZE, &status, &scan_params_cp);
+        ret = hci_send_req(dd, &spinq_rq, 1000);
         if (ret < 0) {
                 hci_close_dev(dd);
-                printf("Failed to set inquiry mode on device\n");
+                printf("Failed to initiate periodic inquiry\n");
                 exit(1);
         } else {
-		printf("Inquiry mode enabled\n");
-	}
+                printf("Initiated periodic inquiry\n");
+        }
 
 	/*set BLE scan parameters*/
 	le_set_scan_parameters_cp scan_params_cp;
@@ -216,7 +223,7 @@ void *hcithread_method(void *arg) {
 	scan_params_cp.window = htobs(0x0010);
 	scan_params_cp.own_bdaddr_type = 0x00; // Public Device Address (default).
 	scan_params_cp.filter = 0x00; // Accept all.
-	struct hci_request scan_params_rq = ble_hci_request(OCF_LE_SET_SCAN_PARAMETERS, LE_SET_SCAN_PARAMETERS_CP_SIZE, &status, &scan_params_cp);
+	struct hci_request scan_params_rq = get_hci_request(OGF_LE_CTL, OCF_LE_SET_SCAN_PARAMETERS, LE_SET_SCAN_PARAMETERS_CP_SIZE, &status, &scan_params_cp);
 	ret = hci_send_req(dd, &scan_params_rq, 1000);
 	if (ret < 0) {
 		hci_close_dev(dd);
@@ -231,7 +238,7 @@ void *hcithread_method(void *arg) {
 	memset(&event_mask_cp, 0, sizeof(le_set_event_mask_cp));
 	for (i=0; i<8; i++)
 		event_mask_cp.mask[i] = 0xFF;
-	struct hci_request set_mask_rq = ble_hci_request(OCF_LE_SET_EVENT_MASK, LE_SET_EVENT_MASK_CP_SIZE, &status, &event_mask_cp);
+	struct hci_request set_mask_rq = get_hci_request(OGF_LE_CTL, OCF_LE_SET_EVENT_MASK, LE_SET_EVENT_MASK_CP_SIZE, &status, &event_mask_cp);
 	ret = hci_send_req(dd, &set_mask_rq, 1000);
 	if (ret < 0) {
 		hci_close_dev(dd);
@@ -246,7 +253,7 @@ void *hcithread_method(void *arg) {
 	memset(&scan_cp, 0, sizeof(scan_cp));
 	scan_cp.enable = 0x01;	//enable flag
 	scan_cp.filter_dup = 0x00; //filtering disabled
-	struct hci_request enable_adv_rq = ble_hci_request(OCF_LE_SET_SCAN_ENABLE, LE_SET_SCAN_ENABLE_CP_SIZE, &status, &scan_cp);
+	struct hci_request enable_adv_rq = get_hci_request(OGF_LE_CTL, OCF_LE_SET_SCAN_ENABLE, LE_SET_SCAN_ENABLE_CP_SIZE, &status, &scan_cp);
 	ret = hci_send_req(dd, &enable_adv_rq, 1000);
 	if (ret < 0) {
 		hci_close_dev(dd);
