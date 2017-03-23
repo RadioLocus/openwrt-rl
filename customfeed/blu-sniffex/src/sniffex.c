@@ -272,10 +272,8 @@ void *hcithread_method(void *arg) {
 			len -= (1 + HCI_EVENT_HDR_SIZE);
 			switch (hdr->evt) {
 			case EVT_LE_META_EVENT:
-				printf("Received le_meta_event\n");
 				meta_event = (evt_le_meta_event*) ptr;
 				if (meta_event->subevent == EVT_LE_ADVERTISING_REPORT) {
-					printf("Received le advertising report\n");
 					reports_count = meta_event->data[0];
 					void * offset = meta_event->data + 1;
 					while (reports_count--) {
@@ -296,7 +294,7 @@ void *hcithread_method(void *arg) {
 							// generating the key
 							sprintf(totp_key_str,"%s%s%d", sensor_token, sensor_id, tuplecounter / seqinterval );
 							totp = generateTOTPUsingTimestamp(totp_key_str, 8, normalized_ts);
-							printf("%s - %d\n", addr, (char)info->data[info->length]);
+							printf("%s - %d (LE)\n", addr, (char)info->data[info->length]);
 							sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%s,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, addr, (char)info->data[info->length], sensor_customflag, totp);
 							enqueue(queue, tuple, 0);
 						} else {
@@ -308,7 +306,6 @@ void *hcithread_method(void *arg) {
 				}
 				break;
 			case EVT_INQUIRY_RESULT_WITH_RSSI:
-				printf("Received inquiry info with rssi\n");
 				num = buf[0];
 				for (i = 0; i < num; i++) {
 					inquiry_info_with_rssi *info = (void *) buf + (sizeof(*info) * i) + 1;
@@ -328,6 +325,7 @@ void *hcithread_method(void *arg) {
 						// generating the key
 						sprintf(totp_key_str,"%s%s%d", sensor_token, sensor_id, tuplecounter / seqinterval );
 						totp = generateTOTPUsingTimestamp(totp_key_str, 8, normalized_ts);
+						printf("%s - %d\n", addr, info->rssi);
 						sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%s,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, addr, info->rssi, sensor_customflag, totp);
 						enqueue(queue, tuple, 0);
 					} else {
