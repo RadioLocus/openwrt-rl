@@ -278,45 +278,6 @@ void *hcithread_method(void *args) {
 						info = (le_advertising_info*)offset;
 						char addr[18];
 						ba2str(&(info->bdaddr), addr);
-						int rssi = (int)info->data[info->length];
-						printf("%s - %d\n", addr, (char)info->data[info->length]);
-						if (rssi > dbmsignal_limit) {
-							gettimeofday(&tv, NULL);
-							if (sensor_tupleversion == 1) {
-								conf->tuplecounter++;
-								char float_str[25];
-								sprintf(float_str,"%ld.%.6ld", tv.tv_sec, tv.tv_usec);
-								double d_timestamp = string_to_double(float_str);
-								d_timestamp = d_timestamp * 1000;
-								d_timestamp = floor(d_timestamp)/ 1000;
-								long l_timestamp = (long) d_timestamp;
-								int timestamp = l_timestamp; /// 1000;
-								int normalized_ts = get_normalized_time(timestamp, timenormalizer);
-								// generating the key
-								sprintf(totp_key_str,"%s%s%d", sensor_token, sensor_id, tuplecounter / seqinterval );
-								totp = generateTOTPUsingTimestamp(totp_key_str, 8, normalized_ts);
-								printf("%s - %d\n", addr, (char)info->data[info->length]);
-								sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%s,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, addr, rssi, sensor_customflag, totp);
-							} else {
-								printf("Unsupported tupleversion");
-								exit(1);
-							}
-							enqueue(queue, tuple, 0);
-						}
-						offset = info->data + info->length + 2;
-					}
-				}
-				break;
-			case EVT_INQUIRY_RESULT_WITH_RSSI:
-				printf("Received inquiry info with rssi\n");
-				num = buf[0];
-				for (i = 0; i < num; i++) {
-					inquiry_info_with_rssi *info = (void *) buf + (sizeof(*info) * i) + 1;
-					char addr[18];
-					ba2str(&(info->bdaddr), addr);
-					int rssi = info->rssi;
-					printf("%s - %d", addr, rssi);
-					if (rssi > dbmsignal_limit) {
 						gettimeofday(&tv, NULL);
 						if (sensor_tupleversion == 1) {
 							conf->tuplecounter++;
@@ -331,14 +292,45 @@ void *hcithread_method(void *args) {
 							// generating the key
 							sprintf(totp_key_str,"%s%s%d", sensor_token, sensor_id, tuplecounter / seqinterval );
 							totp = generateTOTPUsingTimestamp(totp_key_str, 8, normalized_ts);
-							sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%s,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, addr, rssi, sensor_customflag, totp);
+							printf("%s - %d\n", addr, (char)info->data[info->length]);
+							sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%s,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, addr, (char)info->data[info->length], sensor_customflag, totp);
 						} else {
 							printf("Unsupported tupleversion");
 							exit(1);
 						}
 						enqueue(queue, tuple, 0);
+						offset = info->data + info->length + 2;
 					}
 				}
+				break;
+			case EVT_INQUIRY_RESULT_WITH_RSSI:
+				printf("Received inquiry info with rssi\n");
+				num = buf[0];
+				for (i = 0; i < num; i++) {
+					inquiry_info_with_rssi *info = (void *) buf + (sizeof(*info) * i) + 1;
+					char addr[18];
+					ba2str(&(info->bdaddr), addr);
+					gettimeofday(&tv, NULL);
+					if (sensor_tupleversion == 1) {
+						conf->tuplecounter++;
+						char float_str[25];
+						sprintf(float_str,"%ld.%.6ld", tv.tv_sec, tv.tv_usec);
+						double d_timestamp = string_to_double(float_str);
+						d_timestamp = d_timestamp * 1000;
+						d_timestamp = floor(d_timestamp)/ 1000;
+						long l_timestamp = (long) d_timestamp;
+						int timestamp = l_timestamp; /// 1000;
+						int normalized_ts = get_normalized_time(timestamp, timenormalizer);
+						// generating the key
+						sprintf(totp_key_str,"%s%s%d", sensor_token, sensor_id, tuplecounter / seqinterval );
+						totp = generateTOTPUsingTimestamp(totp_key_str, 8, normalized_ts);
+						sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%s,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, addr, info->rssi, sensor_customflag, totp);
+					} else {
+						printf("Unsupported tupleversion");
+						exit(1);
+					}
+					enqueue(queue, tuple, 0);
+			}
 				break;
 			case EVT_INQUIRY_COMPLETE:
 				printf("received inquiry complete\n");
