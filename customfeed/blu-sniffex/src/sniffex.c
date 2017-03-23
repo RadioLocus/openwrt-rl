@@ -119,20 +119,22 @@ void *tuplesender_method(void *arg)
 
 void begin_inquiry(int dd) {
 	int err;
-
-	inquiry_cp icp;
-	memset (&icp, 0, sizeof(icp));
-	icp.lap[2] = 0x9e;
-	icp.lap[1] = 0x8b;
-	icp.lap[0] = 0x33;
-	icp.num_rsp = 0;
-	icp.length = 0x30;
-
-	err = hci_send_cmd(dd, OGF_LINK_CTL, OCF_INQUIRY, INQUIRY_CP_SIZE, &icp);
-	if (err < 0) {
-		printf(stderr,"Error #%d beginning inquiry\n",err);
-		exit(1);
-	}
+        periodic_inquiry_cp spinq_cp;
+        memset(&spinq_cp, 0, sizeof(spinq_cp));
+        memcpy(spinq_cp.lap, lap, 3);
+        spinq_cp.max_period = htobs(16);
+        spinq_cp.min_period = htobs(10);
+        spinq_cp.length     = 8;
+        spinq_cp.num_rsp    = 0;
+        struct hci_request spinq_rq = get_hci_request(OGF_LINK_CTL, OCF_PERIODIC_INQUIRY, PERIODIC_INQUIRY_CP_SIZE, &status, &spinq_cp);
+        ret = hci_send_req(dd, &spinq_rq, 1000);
+        if (ret < 0) {
+                hci_close_dev(dd);
+                printf("Failed to initiate periodic inquiry\n");
+                exit(1);
+        } else {
+                printf("Initiated periodic inquiry\n");
+        }
 }
 
 struct hci_request get_hci_request(uint16_t ogf, uint16_t ocf, int clen, void * status, void * cparam)
@@ -190,30 +192,15 @@ void *hcithread_method(void *arg) {
 	hci_filter_clear(&flt);
 	hci_filter_set_ptype(HCI_EVENT_PKT, &flt);
 	hci_filter_set_event(EVT_LE_META_EVENT, &flt);
-	hci_filter_set_event(EVT_INQUIRY_RESULT_WITH_RSSI, &flt);
-	hci_filter_set_event(EVT_INQUIRY_COMPLETE, &flt);
+	hci_filter_set_event(EVT_EXTENDED_INQUIRY_RESULT, &flt);
+	hci_filter_set_event(EVT_CMD_COMPLETE, &flt);
 	if (setsockopt(dd, SOL_HCI, HCI_FILTER, &flt, sizeof(flt)) < 0) {
 		printf("Can't set HCI filter\n");
 		exit(1);
 	}
 
 	/*initiate periodic inquiry*/
-	periodic_inquiry_cp spinq_cp;
-        memset(&spinq_cp, 0, sizeof(spinq_cp));
-        memcpy(spinq_cp.lap, lap, 3);
-        spinq_cp.max_period = htobs(16);
-        spinq_cp.min_period = htobs(10);
-        spinq_cp.length     = 8;
-        spinq_cp.num_rsp    = 0;
-        struct hci_request spinq_rq = get_hci_request(OGF_LINK_CTL, OCF_PERIODIC_INQUIRY, PERIODIC_INQUIRY_CP_SIZE, &status, &spinq_cp);
-        ret = hci_send_req(dd, &spinq_rq, 1000);
-        if (ret < 0) {
-                hci_close_dev(dd);
-                printf("Failed to initiate periodic inquiry\n");
-                exit(1);
-        } else {
-                printf("Initiated periodic inquiry\n");
-        }
+	begin_inquiry(dd);
 
 	/*set BLE scan parameters*/
 	le_set_scan_parameters_cp scan_params_cp;
@@ -312,10 +299,10 @@ void *hcithread_method(void *arg) {
 					}
 				}
 				break;
-			case EVT_INQUIRY_RESULT_WITH_RSSI:
+			case EVT_EXTENDED_INQUIRY_RESULT:
 				num = buf[0];
 				for (i = 0; i < num; i++) {
-					inquiry_info_with_rssi *info = (void *) buf + (sizeof(*info) * i) + 1;
+					extended_inquiry_info *info = (void *) buf + (sizeof(*info) * i) + 1;
 					char addr[18];
 					ba2str(&(info->bdaddr), addr);
 					gettimeofday(&tv, NULL);
@@ -341,8 +328,8 @@ void *hcithread_method(void *arg) {
 					}
 				}
 				break;
-			case EVT_INQUIRY_COMPLETE:
-				printf("received inquiry complete\n");
+			case EVT_CMD_COMPLETE:
+				printf("received command complete\n");
 				// maybe add some sleep here
 				begin_inquiry(dd);
 				break;
