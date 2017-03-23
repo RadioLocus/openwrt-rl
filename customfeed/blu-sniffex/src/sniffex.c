@@ -162,7 +162,7 @@ void *hcithread_method(void *arg) {
 	int sensor_tupleversion = *(args->sensor_tupleversion);
 	int tupleinterval = *(args->tupleinterval);
 	int tuplecounter = *(args->tuplecounter);
-	int custom_flag = *(args->custom_flag);
+	int sensor_customflag = *(args->custom_flag);
 	int bad_packets_time = *(args->bad_packets_time);
 	int bad_packets = *(args->bad_packets);
 	int dbmsignal_limit = *(args->dbmsignal_limit);
