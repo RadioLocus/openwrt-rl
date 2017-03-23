@@ -279,7 +279,7 @@ void *hcithread_method(void *args) {
 						char addr[18];
 						ba2str(&(info->bdaddr), addr);
 						int rssi = (int)info->data[info->length];
-						printf("%s - %d", addr, rssi);
+						printf("%s - %d\n", addr, (char)info->data[info->length]);
 						if (rssi > dbmsignal_limit) {
 							gettimeofday(&tv, NULL);
 							if (sensor_tupleversion == 1) {
@@ -295,6 +295,7 @@ void *hcithread_method(void *args) {
 								// generating the key
 								sprintf(totp_key_str,"%s%s%d", sensor_token, sensor_id, tuplecounter / seqinterval );
 								totp = generateTOTPUsingTimestamp(totp_key_str, 8, normalized_ts);
+								printf("%s - %d\n", addr, (char)info->data[info->length]);
 								sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%s,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, addr, rssi, sensor_customflag, totp);
 							} else {
 								printf("Unsupported tupleversion");
