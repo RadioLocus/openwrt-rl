@@ -117,6 +117,19 @@ void *tuplesender_method(void *arg)
 	}
 }
 
+struct hci_request get_hci_request(uint16_t ogf, uint16_t ocf, int clen, void * status, void * cparam)
+{
+	struct hci_request rq;
+	memset(&rq, 0, sizeof(rq));
+	rq.ogf = ogf;
+	rq.ocf = ocf;
+	rq.cparam = cparam;
+	rq.clen = clen;
+	rq.rparam = status;
+	rq.rlen = 1;
+	return rq;
+}
+
 void begin_inquiry(int dd) {
         uint8_t lap[3] = { 0x33, 0x8b, 0x9e };
 	int ret;
@@ -136,19 +149,6 @@ void begin_inquiry(int dd) {
         } else {
                 printf("Initiated periodic inquiry\n");
         }
-}
-
-struct hci_request get_hci_request(uint16_t ogf, uint16_t ocf, int clen, void * status, void * cparam)
-{
-	struct hci_request rq;
-	memset(&rq, 0, sizeof(rq));
-	rq.ogf = ogf;
-	rq.ocf = ocf;
-	rq.cparam = cparam;
-	rq.clen = clen;
-	rq.rparam = status;
-	rq.rlen = 1;
-	return rq;
 }
 
 void *hcithread_method(void *arg) {
