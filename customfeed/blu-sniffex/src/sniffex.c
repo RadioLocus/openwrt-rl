@@ -118,7 +118,7 @@ void *tuplesender_method(void *arg)
 }
 
 void begin_inquiry(int dd) {
-	int err;
+	int ret;
         periodic_inquiry_cp spinq_cp;
         memset(&spinq_cp, 0, sizeof(spinq_cp));
         memcpy(spinq_cp.lap, lap, 3);
