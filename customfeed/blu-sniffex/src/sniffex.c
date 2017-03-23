@@ -271,6 +271,7 @@ void *hcithread_method(void *args) {
 				printf("Received le_meta_event\n");
 				meta_event = (evt_le_meta_event*) ptr;
 				if (meta_event->subevent == EVT_LE_ADVERTISING_REPORT) {
+					printf("Received le advertising report\n");
 					reports_count = meta_event->data[0];
 					void * offset = meta_event->data + 1;
 					while (reports_count--) {
@@ -278,6 +279,7 @@ void *hcithread_method(void *args) {
 						char addr[18];
 						ba2str(&(info->bdaddr), addr);
 						int rssi = (int)info->data[info->length];
+						printf("%s - %d", addr, rssi);
 						if (rssi > dbmsignal_limit) {
 							gettimeofday(&tv, NULL);
 							if (sensor_tupleversion == 1) {
@@ -293,7 +295,6 @@ void *hcithread_method(void *args) {
 								// generating the key
 								sprintf(totp_key_str,"%s%s%d", sensor_token, sensor_id, tuplecounter / seqinterval );
 								totp = generateTOTPUsingTimestamp(totp_key_str, 8, normalized_ts);
-								printf("%s - %d", addr, rssi);
 								sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%s,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, addr, rssi, sensor_customflag, totp);
 							} else {
 								printf("Unsupported tupleversion");
@@ -313,6 +314,7 @@ void *hcithread_method(void *args) {
 					char addr[18];
 					ba2str(&(info->bdaddr), addr);
 					int rssi = info->rssi;
+					printf("%s - %d", addr, rssi);
 					if (rssi > dbmsignal_limit) {
 						gettimeofday(&tv, NULL);
 						if (sensor_tupleversion == 1) {
@@ -328,7 +330,6 @@ void *hcithread_method(void *args) {
 							// generating the key
 							sprintf(totp_key_str,"%s%s%d", sensor_token, sensor_id, tuplecounter / seqinterval );
 							totp = generateTOTPUsingTimestamp(totp_key_str, 8, normalized_ts);
-							printf("%s - %d", addr, rssi);
 							sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%s,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, addr, rssi, sensor_customflag, totp);
 						} else {
 							printf("Unsupported tupleversion");
