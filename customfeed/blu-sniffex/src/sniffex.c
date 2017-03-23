@@ -42,80 +42,79 @@ struct thread_args {
 
 void *dropcounter_method(void *arg)
 {
-   struct Metric* metrics[1];
-   char timestamp[20];
-   char *metricsStr;
-   int *dropCounter;
-   struct thread_args *args = (struct thread_args *)arg;
-   #ifdef PC
-       int j = 2;
-       while(j>0){
-           sleep(2);
-   #else
-       while(1){
-           sleep(60);
-   #endif
-   dropCounter = (int *)args->dropcounter;
-   sprintf(timestamp, "%u\n", (unsigned)time(NULL)); 
-   metrics[0] = createMetric("DROP_COUNT", *dropCounter, atof(timestamp));
-   json_object* metricJson = createMetricJson(metrics,1);
-   metricsStr = json_object_to_json_string(metricJson);
-   #ifdef PC
-   printf("^^ metricstr %s\n",metricsStr);
-   #endif
-   curl_post_jsonstr(args->moniturl, metricsStr);
-   #ifdef PC
-   printf("^^ metricstr %s\n",metricsStr);
-   #endif
-   //json_object_put(metricJson);
-   free(metrics[0]);
-   free(metricsStr);
-   #ifdef PC
-   j--;}
-   #else
-   printf("json sent\n");
-   }
-   #endif
+	struct Metric* metrics[1];
+	char timestamp[20];
+	char *metricsStr;
+	int *dropCounter;
+	struct thread_args *args = (struct thread_args *)arg;
+	#ifdef PC
+	int j = 2;
+	while (j > 0) {
+		sleep(2);
+	#else
+	while (1) {
+		sleep(60);
+	#endif
+		dropCounter = (int *)args->dropcounter;
+		sprintf(timestamp, "%u\n", (unsigned)time(NULL)); 
+		metrics[0] = createMetric("DROP_COUNT", *dropCounter, atof(timestamp));
+		json_object* metricJson = createMetricJson(metrics,1);
+		metricsStr = json_object_to_json_string(metricJson);
+	#ifdef PC
+		printf("^^ metricstr %s\n",metricsStr);
+	#endif
+		curl_post_jsonstr(args->moniturl, metricsStr);
+	#ifdef PC
+		printf("^^ metricstr %s\n",metricsStr);
+	#endif
+		//json_object_put(metricJson);
+		free(metrics[0]);
+		free(metricsStr);
+	#ifdef PC
+		j--;
+	}
+	#else
+		printf("json sent\n");
+	}
+	#endif
 }
-
 
 void *tuplesender_method(void *arg)
 {
-    struct thread_args *args = (struct thread_args *)arg;
-    struct Queue* queue = (struct Queue*)args->queue;
-    int *dropCounter = (int *)args->dropcounter;
-    int *max_tuples_in_batch = (int *)args->max_tuples_in_batch;
-    int *tupleinterval = (int *)args->tupleinterval;
-    char *tuple;
-    char *url = (char *)args->tupleurl;
-    int while_ctr=0;
-    #ifdef PC
-    int i = 5;
-    while(i>0){
-    #else
-    while(1){
-    #endif
-        //sleep(3);
-        if (while_ctr > 100){
-            sleep(3);
-        }
-        //tuple = consumer_dequeue(queue);
-        tuple = consumer_dequeue_all(queue, *max_tuples_in_batch);
-        //printf("tuplesender %s\n", tuple);
-        if (tuple != NULL)
-        {
-            if (CURLE_OK != curl_post_str(url, tuple)){
-                *dropCounter = *dropCounter + 1;
-                enqueue(queue, tuple, 1);
-            }
-            while_ctr=0;
-        }
-        while_ctr++;
-        free(tuple);
-        #ifdef PC
-        i--;
-        #endif
-    }
+	struct thread_args *args = (struct thread_args *)arg;
+	struct Queue* queue = (struct Queue*)args->queue;
+	int *dropCounter = (int *)args->dropcounter;
+	int *max_tuples_in_batch = (int *)args->max_tuples_in_batch;
+	int *tupleinterval = (int *)args->tupleinterval;
+	char *tuple;
+	char *url = (char *)args->tupleurl;
+	int while_ctr=0;
+	#ifdef PC
+	int i = 5;
+	while (i >0 ) {
+	#else
+	while (1) {
+	#endif
+		//sleep(3);
+		if (while_ctr > 100) {
+			sleep(3);
+		}
+		//tuple = consumer_dequeue(queue);
+		tuple = consumer_dequeue_all(queue, *max_tuples_in_batch);
+		//printf("tuplesender %s\n", tuple);
+		if (tuple != NULL) {
+			if (CURLE_OK != curl_post_str(url, tuple)){
+				*dropCounter = *dropCounter + 1;
+				enqueue(queue, tuple, 1);
+			}
+			while_ctr=0;
+		}
+		while_ctr++;
+		free(tuple);
+	#ifdef PC
+		i--;
+	#endif
+	}
 }
 
 void begin_inquiry(int dd) {
@@ -395,6 +394,7 @@ struct my_optmap sensorid_options[] = {
                 }
         }
 };
+
 struct my_optmap bluetooth_options[] = {
         {
                 .map = {
