@@ -132,7 +132,7 @@ struct hci_request get_hci_request(uint16_t ogf, uint16_t ocf, int clen, void * 
 
 void begin_inquiry(int dd) {
         uint8_t lap[3] = { 0x33, 0x8b, 0x9e };
-	int ret;
+	int ret, status;
         periodic_inquiry_cp spinq_cp;
         memset(&spinq_cp, 0, sizeof(spinq_cp));
         memcpy(spinq_cp.lap, lap, 3);
