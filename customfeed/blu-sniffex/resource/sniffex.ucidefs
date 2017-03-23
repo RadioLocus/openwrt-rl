@@ -14,10 +14,10 @@ uci set wireless.mon0.network=lan
 uci set wireless.mon0.ifname=mon0
 uci commit wireless
 echo "added monitor interface"
-echo "removing existing crons for sniffex"
-sed -i '/sniffex/d' /etc/crontabs/root
+echo "removing existing crons for blu_sniffex"
+sed -i '/blu_sniffex/d' /etc/crontabs/root
 echo "adding cron"
-echo '*/1 * * * * . /etc/profile;/etc/init.d/sniffex start' >> /etc/crontabs/root
+echo '*/1 * * * * . /etc/profile;/etc/init.d/blu_sniffex start' >> /etc/crontabs/root
 /etc/init.d/cron reload
 echo "added cron"
 echo "restarting wifi"
