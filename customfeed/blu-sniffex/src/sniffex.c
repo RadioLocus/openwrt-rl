@@ -149,7 +149,24 @@ struct hci_request ble_hci_request(uint16_t ocf, int clen, void * status, void *
 	return rq;
 }
 
-void *hcithread_method(void *args) {
+void *hcithread_method(void *arg) {
+	struct thread_args *args = (struct thread_args *)arg;
+	struct Queue* queue = (struct Queue*)args->queue;
+	char *interface_name = args->interface_name;
+	char *sensor_id = args->sensor_id;
+	char *sensor_token = args->sensor_token;
+	int seqinterval = *(args->seq_interval);
+	int timenormalizer = *(args->time_normalizer);
+	int totptimeinterval = *(args->totp_time_interval);
+	int max_packets = *(args->max_packets);
+	int sensor_tupleversion = *(args->sensor_tupleversion);
+	int tupleinterval = *(args->tupleinterval);
+	int tuplecounter = *(args->tuplecounter);
+	int custom_flag = *(args->custom_flag);
+	int bad_packets_time = *(args->bad_packets_time);
+	int bad_packets = *(args->bad_packets);
+	int dbmsignal_limit = *(args->dbmsignal_limit);
+
 	struct pollfd fd;
 	unsigned char buf[HCI_MAX_EVENT_SIZE], *ptr;
 	hci_event_hdr *hdr;
@@ -160,19 +177,7 @@ void *hcithread_method(void *args) {
 	evt_le_meta_event * meta_event;
 	le_advertising_info * info;
 	uint8_t num, reports_count;
-
-	Configuration* conf = (Configuration * ) args;
-	int dbmsignal_limit = conf->dbmsignal_limit;
-	int seqinterval = conf->seqinterval;
-	int timenormalizer = conf->timenormalizer;
-	int totptimeinterval = conf->totptimeinterval;
-	int sensor_tupleversion = conf->sensor_tupleversion;
-	int tuplecounter = conf->tuplecounter;
-	int sensor_customflag = conf->custom_flag;
-	struct Queue *queue = conf->queue;
-	char *sensor_id = conf->sensor_id;
-	char *sensor_token = conf->sensor_token;
-
+	
 	int dev_id = hci_get_route(NULL);
 	int dd = hci_open_dev(dev_id);
 	if (dd < 0) {
