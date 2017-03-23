@@ -154,7 +154,7 @@ void *hcithread_method(void *args) {
 	unsigned char buf[HCI_MAX_EVENT_SIZE], *ptr;
 	hci_event_hdr *hdr;
 	struct hci_filter flt;
-	int i, totp, len;
+	int i, totp, len, ret, status;
 	struct timeval tv;
 	char tuple[1000], totp_key_str[200];
 	evt_le_meta_event * meta_event;
@@ -203,12 +203,10 @@ void *hcithread_method(void *args) {
 	scan_params_cp.window = htobs(0x0010);
 	scan_params_cp.own_bdaddr_type = 0x00; // Public Device Address (default).
 	scan_params_cp.filter = 0x00; // Accept all.
-
 	struct hci_request scan_params_rq = ble_hci_request(OCF_LE_SET_SCAN_PARAMETERS, LE_SET_SCAN_PARAMETERS_CP_SIZE, &status, &scan_params_cp);
-	
-	ret = hci_send_req(device, &scan_params_rq, 1000);
+	ret = hci_send_req(dd, &scan_params_rq, 1000);
 	if (ret < 0) {
-		hci_close_dev(device);
+		hci_close_dev(dd);
 		printf("Failed to set BLE scan parameters data");
 		exit(1);
 	}
@@ -216,14 +214,12 @@ void *hcithread_method(void *args) {
 	/*set BLE events report mask*/
 	le_set_event_mask_cp event_mask_cp;
 	memset(&event_mask_cp, 0, sizeof(le_set_event_mask_cp));
-	int i = 0;
 	for (i=0; i<8; i++)
 		event_mask_cp.mask[i] = 0xFF;
-
 	struct hci_request set_mask_rq = ble_hci_request(OCF_LE_SET_EVENT_MASK, LE_SET_EVENT_MASK_CP_SIZE, &status, &event_mask_cp);
-	ret = hci_send_req(device, &set_mask_rq, 1000);
+	ret = hci_send_req(dd, &set_mask_rq, 1000);
 	if (ret < 0) {
-		hci_close_dev(device);
+		hci_close_dev(dd);
 		printf("Failed to set LE event mask");
 		exit(1);
 	}
@@ -233,11 +229,10 @@ void *hcithread_method(void *args) {
 	memset(&scan_cp, 0, sizeof(scan_cp));
 	scan_cp.enable = 0x01;	//enable flag
 	scan_cp.filter_dup = 0x00; //filtering disabled
-
 	struct hci_request enable_adv_rq = ble_hci_request(OCF_LE_SET_SCAN_ENABLE, LE_SET_SCAN_ENABLE_CP_SIZE, &status, &scan_cp);
-	ret = hci_send_req(device, &enable_adv_rq, 1000);
+	ret = hci_send_req(dd, &enable_adv_rq, 1000);
 	if (ret < 0) {
-		hci_close_dev(device);
+		hci_close_dev(dd);
 		printf("failed to enable BLE scan");
 		exit(1);
 	}
