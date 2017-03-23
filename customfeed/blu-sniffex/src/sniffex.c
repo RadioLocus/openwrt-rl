@@ -285,7 +285,7 @@ void *hcithread_method(void *arg) {
 						ba2str(&(info->bdaddr), addr);
 						gettimeofday(&tv, NULL);
 						if (sensor_tupleversion == 1) {
-							conf->tuplecounter++;
+							tuplecounter++;
 							char float_str[25];
 							sprintf(float_str,"%ld.%.6ld", tv.tv_sec, tv.tv_usec);
 							double d_timestamp = string_to_double(float_str);
@@ -317,7 +317,7 @@ void *hcithread_method(void *arg) {
 					ba2str(&(info->bdaddr), addr);
 					gettimeofday(&tv, NULL);
 					if (sensor_tupleversion == 1) {
-						conf->tuplecounter++;
+						tuplecounter++;
 						char float_str[25];
 						sprintf(float_str,"%ld.%.6ld", tv.tv_sec, tv.tv_usec);
 						double d_timestamp = string_to_double(float_str);
