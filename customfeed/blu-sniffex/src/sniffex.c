@@ -118,6 +118,7 @@ void *tuplesender_method(void *arg)
 }
 
 void begin_inquiry(int dd) {
+        uint8_t lap[3] = { 0x33, 0x8b, 0x9e };
 	int ret;
         periodic_inquiry_cp spinq_cp;
         memset(&spinq_cp, 0, sizeof(spinq_cp));
@@ -178,7 +179,6 @@ void *hcithread_method(void *arg) {
 	evt_le_meta_event * meta_event;
 	le_advertising_info * info;
 	uint8_t num, reports_count;
-        uint8_t lap[3] = { 0x33, 0x8b, 0x9e };
 	
 	int dev_id = hci_get_route(NULL);
 	int dd = hci_open_dev(dev_id);
