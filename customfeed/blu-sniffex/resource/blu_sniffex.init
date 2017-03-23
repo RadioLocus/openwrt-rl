@@ -8,11 +8,11 @@
 # Act and international treaties.
 #
 
-NAME=blu_sniffex
+NAME=blu_radiolocus
 PROG=blu_sniffex
 START=99
 STOP=99
-sniffex_args=""
+blu_sniffex_args=""
 pid_file="/var/run/${NAME}.pid"
 SERVICE_DAEMONIZE=1
 SERVICE_WRITE_PID=1
@@ -39,15 +39,14 @@ start()
 	test uci get blu_radiolocus.@blu_radiolocus[0].tupleversion
 	test uci get blu_radiolocus.@blu_radiolocus[0].curlingthreads
 	test uci get blu_radiolocus.@blu_radiolocus[0].maxtuplesinbatch
-	test uci get blu_radiolocus.@blu_radiolocus[0].moninf
 
         if [ "$disabled" = "1" ]; then
-		echo "error in starting sniffex" >&2
+		echo "error in starting blu_sniffex" >&2
                 exit 0
         fi
 
 	echo "starting service"
-        service_start /bin/${PROG} ${sniffex_args}
+        service_start /bin/${PROG} ${blu_sniffex_args}
 	return $status
 }
 

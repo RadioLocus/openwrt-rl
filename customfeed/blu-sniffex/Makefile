@@ -87,16 +87,8 @@ define Package/blu_sniffex/prerm
 		/etc/init.d/blu_sniffex stop
 		echo "Remove sniffex from crontab"
 		sed -i '/blu_sniffex/d' /etc/crontabs/root
-		echo "Removing monitor interface"
-		uci delete wireless.mon0.mode
-		uci delete wireless.mon0.device
-		uci delete wireless.mon0.hidden
-		uci delete wireless.mon0.network
-		uci delete wireless.mon0.ifname
-		uci delete wireless.mon0
-		uci commit
-		wifi down;wifi up
-
+		echo "closing hci device"
+		hciconfig hci0 down
 	fi
 exit 0
 endef
