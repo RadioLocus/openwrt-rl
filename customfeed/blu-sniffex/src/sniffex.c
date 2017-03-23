@@ -294,11 +294,11 @@ void *hcithread_method(void *args) {
 							totp = generateTOTPUsingTimestamp(totp_key_str, 8, normalized_ts);
 							printf("%s - %d\n", addr, (char)info->data[info->length]);
 							sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%s,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, addr, (char)info->data[info->length], sensor_customflag, totp);
+							enqueue(queue, tuple, 0);
 						} else {
-							printf("Unsupported tupleversion");
+							printf("Unsupported tupleversion\n");
 							exit(1);
 						}
-						enqueue(queue, tuple, 0);
 						offset = info->data + info->length + 2;
 					}
 				}
@@ -325,12 +325,12 @@ void *hcithread_method(void *args) {
 						sprintf(totp_key_str,"%s%s%d", sensor_token, sensor_id, tuplecounter / seqinterval );
 						totp = generateTOTPUsingTimestamp(totp_key_str, 8, normalized_ts);
 						sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%s,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, addr, info->rssi, sensor_customflag, totp);
+						enqueue(queue, tuple, 0);
 					} else {
-						printf("Unsupported tupleversion");
+						printf("Unsupported tupleversion\n");
 						exit(1);
 					}
-					enqueue(queue, tuple, 0);
-			}
+				}
 				break;
 			case EVT_INQUIRY_COMPLETE:
 				printf("received inquiry complete\n");
@@ -552,7 +552,7 @@ int main(int argc, char **argv)
 	int maxTuplesInBatch = 2000;
 	int noOfCurlingThreads = 5;
 	int max_packets = -1;
-	int sensor_tupleversion = 3;
+	int sensor_tupleversion = 1;
 	int tuplecounter = 0;
 	int custom_flag = 1;
 	int dbmsignal_limit = -200;
@@ -602,7 +602,7 @@ int main(int argc, char **argv)
 	}
 
 	uci_set_confdir(ctx, "/etc/config");
-	uci_load(ctx, "bluetooth", &pkg1);
+	uci_load(ctx, "blu_radiolocus", &pkg1);
 	uci_load(ctx1, "sensorid", &pkg2);
 
 	ucimap_parse(&bluetooth_map, pkg1);
