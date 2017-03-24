@@ -12,3 +12,6 @@ numOfIterationsInterface - number of times interface will be checked before a re
 numOfIterationsCurl - number of times curl url will be checked before a reboot occurs
 numOfIterationsMonInterface - number of times monitor interface will be checked before a reboot occurs
 numOfIterationsMonRx - number of times monitor interface received bytes will be checked for changes before a reboot occurs
+bluInterface - bluetooth hci interface to monitor if it has come up or not
+numOfIterationsBluInterface - number of times bluetooth hci interface will be checked before a reboot occurs
+tmpFileBluInterfacePresentIter - temp file location

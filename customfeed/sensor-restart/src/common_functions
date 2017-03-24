@@ -239,12 +239,12 @@ getValueFromPropsFile() {
 
 
 #check if the interface is present in the current system.
-#input: name of the interface
+#input: name of the interface, device base folder
 #output: 0 if present, 1 otherwise
 checkIfInterfacePresent() {
 
         printInfo "check if interface $1 is present"
-        checkIfDirectoryExists $networkDeviceBaseFolder/$1
+        checkIfDirectoryExists $2/$1
         if [ $? -eq 0 ];
         then
                 printInfo "Interface $1 is present"
