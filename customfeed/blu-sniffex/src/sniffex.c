@@ -289,7 +289,7 @@ void *hcithread_method(void *arg) {
 							sprintf(totp_key_str,"%s%s%d", sensor_token, sensor_id, tuplecounter / seqinterval );
 							totp = generateTOTPUsingTimestamp(totp_key_str, 8, normalized_ts);
 							printf("%s - %d (LE)\n", addr, (char)info->data[info->length]);
-							sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%s,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, addr, (char)info->data[info->length], sensor_customflag, totp);
+							sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%s,%d,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, addr, (char)info->data[info->length], sensor_customflag, totp, 0);
 							enqueue(queue, tuple, 0);
 						} else {
 							printf("Unsupported tupleversion\n");
@@ -320,7 +320,7 @@ void *hcithread_method(void *arg) {
 						sprintf(totp_key_str,"%s%s%d", sensor_token, sensor_id, tuplecounter / seqinterval );
 						totp = generateTOTPUsingTimestamp(totp_key_str, 8, normalized_ts);
 						printf("%s - %d (EIR)\n", addr, info->rssi);
-						sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%s,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, addr, info->rssi, sensor_customflag, totp);
+						sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%s,%d,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, addr, info->rssi, sensor_customflag, totp, 1);
 						enqueue(queue, tuple, 0);
 					} else {
 						printf("Unsupported tupleversion\n");
