@@ -40,6 +40,43 @@ struct thread_args {
 	char *tupleurl;
 };
 
+void *aliveping_method(void *arg)
+{
+	struct Metric* metrics[1];
+	char timestamp[20];
+	char *metricsStr;
+	struct thread_args *args = (struct thread_args *)arg;
+	#ifdef PC
+	int j = 2;
+	while (j > 0) {
+		sleep(2);
+	#else
+	while (1) {
+		sleep(60);
+	#endif
+		sprintf(timestamp, "%u\n", (unsigned)time(NULL)); 
+		metrics[0] = createMetric("BLU_SNIFFEX_ALIVE", 1, atof(timestamp));
+		json_object* metricJson = createMetricJson(metrics,1);
+		metricsStr = json_object_to_json_string(metricJson);
+	#ifdef PC
+		printf("^^ metricstr %s\n",metricsStr);
+	#endif
+		curl_post_jsonstr(args->moniturl, metricsStr);
+	#ifdef PC
+		printf("^^ metricstr %s\n",metricsStr);
+	#endif
+		//json_object_put(metricJson);
+		free(metrics[0]);
+		free(metricsStr);
+	#ifdef PC
+		j--;
+	}
+	#else
+		printf("json sent\n");
+	}
+	#endif
+}
+
 void *dropcounter_method(void *arg)
 {
 	struct Metric* metrics[1];
@@ -543,6 +580,7 @@ int main(int argc, char **argv)
 	pthread_t tHciThread;
 	pthread_t *tTupleSender;
 	pthread_t tDropCounter;
+	pthread_t tAlivePing;
 	int i;
 	void* ret;
 	int maxQueueSize = 10000;
@@ -661,9 +699,10 @@ int main(int argc, char **argv)
 
 	tTupleSender = malloc(sizeof(pthread_t)*noOfCurlingThreads);
 	pthread_create(&tDropCounter, NULL, dropcounter_method, (void *)&arguments);
+	pthread_create(&tAlivePing, NULL, aliveping_method, (void *)&arguments);
 	pthread_create(&tHciThread, NULL, hcithread_method, (void *)&arguments);
 	for (i = 0; i < noOfCurlingThreads; i++)
-	pthread_create(&tTupleSender[i], NULL, tuplesender_method, (void *)&arguments);
+		pthread_create(&tTupleSender[i], NULL, tuplesender_method, (void *)&arguments);
 	#ifdef PC
 	int j  = 10;
 	while(j != 0) {
@@ -672,7 +711,7 @@ int main(int argc, char **argv)
 	#endif
 		sleep(5);
 
-		//pcap thread
+		//hci thread
 		int a = pthread_tryjoin_np(tHciThread, &ret);
 		if (a == EBUSY) {
 			//printf("hci thread busy\n");
@@ -682,6 +721,18 @@ int main(int argc, char **argv)
 			pthread_create(&tHciThread, NULL, hcithread_method, (void *)&arguments);
 		} else {
 			//printf("hci thread error\n");
+		}
+
+		//aliveping thread
+		a = pthread_tryjoin_np(tAlivePing, &ret);
+		if (a == EBUSY) {
+			//printf("tAlivePing busy\n");
+		} else if (a == 0) {
+                        //printf("tAlivePing complete\n");
+			sleep(5);
+			pthread_create(&tAlivePing, NULL, aliveping_method, (void *)&arguments);
+		} else {
+			//printf("tAlivePing error\n");
 		}
 
 		//dropcounter thread
