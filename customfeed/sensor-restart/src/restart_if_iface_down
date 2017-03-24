@@ -17,10 +17,7 @@ numOfIterationsMonRx=`uci get sensor-restart.sensor.numOfIterationsMonRx`
 bluInterface=`uci get sensor-restart.sensor.bluInterface`
 bluetoothDeviceBaseFolder=`uci get sensor-restart.sensor.bluetoothDeviceBaseFolder`
 tmpFileBluInterfacePresentIter=`uci get sensor-restart.sensor.tmpFileBluInterfacePresentIter`
-tmpFileBluRx=`uci get sensor-restart.sensor.tmpFileBluRx`
-tmpFileBluRxIter=`uci get sensor-restart.sensor.tmpFileBluRxIter`
 numOfIterationsBluInterface=`uci get sensor-restart.sensor.numOfIterationsBluInterface`
-numOfIterationsBluRx=`uci get sensor-restart.sensor.numOfIterationsBluRx`
 
 . "$commonFunctionsFile"
 
@@ -31,15 +28,10 @@ cleanup() {
 	setValueInFile "0" "$tmpFileInterfacePresentIter"
 	setValueInFile "0" "$tmpFileMonInterfacePresentIter"
 	setValueInFile "0" "$tmpFileMonRxIter"
-	setValueInFile "0" "$tmpFileBluInterfacePresentIter"
-	setValueInFile "0" "$tmpFileBluRxIter"
 	deleteDirectoryOrFile "$tmpFileInterfacePresentIter"
 	deleteDirectoryOrFile "$tmpFileMonInterfacePresentIter"
 	deleteDirectoryOrFile "$tmpFileMonRx"
 	deleteDirectoryOrFile "$tmpFileMonRxIter"
-	deleteDirectoryOrFile "$tmpFileBluInterfacePresentIter"
-	deleteDirectoryOrFile "$tmpFileBluRx"
-	deleteDirectoryOrFile "$tmpFileBluRxIter"
 }
 
 #input: message to be printed with reboot
@@ -134,19 +126,19 @@ resetIfCurling() {
 
 #Input: interface name
 #output: Rx Bytes
-getRxBytesWifi(){
+getRxBytes(){
 	echo `/sbin/ifconfig $1 | grep 'RX bytes' | awk -F":" '{print $2}'| awk -F" " '{print $1}'`
 }
 
 #input: interface name, rx bytes file name, iteration file name
 #output: no output, iteration reset in file
-resetIterationIfActivityWifi() {
+resetIterationIfActivity() {
 
 checkIfFileExists $2
 if [ "$?" -eq "1" ];
 then
         printInfo "$2 not present. create new file and save present monrx"
-        monRx=`getRxBytesWifi $1`
+        monRx=`getRxBytes $1`
         printInfo "monRx: $monRx"
         setValueInFile "$monRx" "$2"
 	setValueInFile "0" "$3"
@@ -155,49 +147,13 @@ else
         prevMonRx=`getValueFromFile $2`
         printInfo "prevMonRx: $prevMonRx"
         printInfo "getting currMonRx"
-        currMonRx=`getRxBytesWifi $1`
+        currMonRx=`getRxBytes $1`
         printInfo "currMonRx: $currMonRx"
         setValueInFile "$currMonRx" "$2"
         printInfo "check if currMonRx greater than prevMonRx for interface: $1"
         if [ $currMonRx -gt $prevMonRx ];
         then
                 printInfo "currMonRx: $currMonRx is greater than prevMonRx: $prevMonRx"
-	        setValueInFile "0" "$3"
-	fi
-fi
-
-}
-
-#Input: interface name
-#output: Rx Bytes
-getRxBytesBluetooth(){
-	echo `hciconfig $1 | grep 'RX bytes' | awk -F":" '{print $2}'| awk -F" " '{print $1}'`
-}
-
-#input: interface name, rx bytes file name, iteration file name
-#output: no output, iteration reset in file
-resetIterationIfActivityBluetooth() {
-
-checkIfFileExists $2
-if [ "$?" -eq "1" ];
-then
-        printInfo "$2 not present. create new file and save present blurx"
-        bluRx=`getRxBytesBluetooth $1`
-        printInfo "bluRx: $bluRx"
-        setValueInFile "$bluRx" "$2"
-	setValueInFile "0" "$3"
-else
-        printInfo "getting previous rx from $2"
-        prevBluRx=`getValueFromFile $2`
-        printInfo "prevBluRx: $prevBluRx"
-        printInfo "getting currBluRx"
-        currBluRx=`getRxBytesBluetooth $1`
-        printInfo "currBluRx: $currBluRx"
-        setValueInFile "$currBluRx" "$2"
-        printInfo "check if currBluRx greater than prevBluRx for interface: $1"
-        if [ $currBluRx -gt $prevBluRx ];
-        then
-                printInfo "currBluRx: $currBluRx is greater than prevBluRx: $prevBluRx"
 	        setValueInFile "0" "$3"
 	fi
 fi
@@ -226,15 +182,7 @@ if [ $? -eq 0 ];
 then
 	incrementIteration "$tmpFileMonRxIter"
 	restartIfIterationExceeded "$numOfIterationsMonRx" "$tmpFileMonRxIter"
-	resetIterationIfActivityWifi "$monInterface" "$tmpFileMonRx" "$tmpFileMonRxIter"
-fi
-
-checkIfInterfacePresent $bluInterface
-if [ $? -eq 0 ];
-then
-	incrementIteration "$tmpFileBluRxIter"
-	restartIfIterationExceeded "$numOfIterationsBluRx" "$tmpFileBluRxIter"
-	resetIterationIfActivityBluetooth "$bluInterface" "$tmpFileBluRx" "$tmpFileBluRxIter"
+	resetIterationIfActivity "$monInterface" "$tmpFileMonRx" "$tmpFileMonRxIter"
 fi
 
 printInfo "not restarting"
