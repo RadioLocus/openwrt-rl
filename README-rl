@@ -193,3 +193,10 @@ under config interface 'lan', change ipaddr to
 -- configure internet using minimal-ui
 -- set mac address of interface
 -- change ssh, ui and config passwords
+
+
+-- auto power-on bluetooth controllers after boot
+In /etc/bluetooth/main.conf
+[Policy]
+AutoEnable=true
+
