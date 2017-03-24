@@ -300,11 +300,11 @@ void *hcithread_method(void *arg) {
 				}
 				break;
 			case EVT_EXTENDED_INQUIRY_RESULT:
-				num = buf[0];
+				num = *ptr;
 				for (i = 0; i < num; i++) {
-					extended_inquiry_info *info = (void *) buf + (sizeof(*info) * i) + 1;
+					extended_inquiry_info *info = (void *) ptr + (EXTENDED_INQUIRY_INFO_SIZE * i) + 1;
 					char addr[18];
-					ba2str(&(info->bdaddr), addr);
+					ba2str(&info->bdaddr, addr);
 					gettimeofday(&tv, NULL);
 					if (sensor_tupleversion == 1) {
 						tuplecounter++;
@@ -319,7 +319,7 @@ void *hcithread_method(void *arg) {
 						// generating the key
 						sprintf(totp_key_str,"%s%s%d", sensor_token, sensor_id, tuplecounter / seqinterval );
 						totp = generateTOTPUsingTimestamp(totp_key_str, 8, normalized_ts);
-						printf("%s - %d\n", addr, info->rssi);
+						printf("%s - %d (EIR)\n", addr, info->rssi);
 						sprintf(tuple, "%d,%s,%d,%d,%ld.%.6ld,%s,%d,%d,%d\n", sensor_tupleversion, sensor_id, tuplecounter, queue->size, tv.tv_sec, tv.tv_usec, addr, info->rssi, sensor_customflag, totp);
 						enqueue(queue, tuple, 0);
 					} else {
