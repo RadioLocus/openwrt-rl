@@ -14,10 +14,6 @@ numOfIterationsInterface=`uci get sensor-restart.sensor.numOfIterationsInterface
 numOfIterationsCurl=`uci get sensor-restart.sensor.numOfIterationsCurl`
 numOfIterationsMonInterface=`uci get sensor-restart.sensor.numOfIterationsMonInterface`
 numOfIterationsMonRx=`uci get sensor-restart.sensor.numOfIterationsMonRx`
-bluInterface=`uci get sensor-restart.sensor.bluInterface`
-bluetoothDeviceBaseFolder=`uci get sensor-restart.sensor.bluetoothDeviceBaseFolder`
-tmpFileBluInterfacePresentIter=`uci get sensor-restart.sensor.tmpFileBluInterfacePresentIter`
-numOfIterationsBluInterface=`uci get sensor-restart.sensor.numOfIterationsBluInterface`
 
 . "$commonFunctionsFile"
 
@@ -94,10 +90,11 @@ restartIfIterationExceeded() {
 #input: interface, iteration file name
 #output: no output, resets iteration.
 resetIfInterfacePresent() {
-	checkIfInterfacePresent $1 $2
+	checkIfInterfacePresent $1
 	if [ $? -eq 0 ];
 	then
-        	setValueInFile "0" "$3"
+        	setValueInFile "0" "$2"
+
 	fi
 }
 
@@ -169,13 +166,10 @@ restartIfIterationExceeded "$numOfIterationsCurl" "$tmpFileCurlIter"
 resetIfCurling "$tmpFileCurlIter"
 
 restartIfIterationExceeded "$numOfIterationsInterface" "$tmpFileInterfacePresentIter"
-resetIfInterfacePresent "$interface" "$networkDeviceBaseFolder" "$tmpFileInterfacePresentIter"
+resetIfInterfacePresent "$interface" "$tmpFileInterfacePresentIter"
 
 restartIfIterationExceeded "$numOfIterationsMonInterface" "$tmpFileMonInterfacePresentIter"
-resetIfInterfacePresent "$monInterface" "$networkDeviceBaseFolder" "$tmpFileMonInterfacePresentIter"
-
-restartIfIterationExceeded "$numOfIterationsBluInterface" "$tmpFileBluInterfacePresentIter"
-resetIfInterfacePresent "$bluInterface" "$bluetoothDeviceBaseFolder" "$tmpFileBluInterfacePresentIter"
+resetIfInterfacePresent "$monInterface" "$tmpFileMonInterfacePresentIter"
 
 checkIfInterfacePresent $monInterface
 if [ $? -eq 0 ];
