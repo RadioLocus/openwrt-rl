@@ -23,19 +23,19 @@ make -j<num_threads> [V=s]
 
 -- Flash firmware on tplink device
 Fresh tp link device
-	Follow steps as per the document
+	Follow steps as per the google drive document
 
 Existing radiolocus device
 	copy firmware to /tmp/ on the device
-    scp bin/ar71xx/openwrt-ar71xx-generic-tl-mr3020-v1-squashfs-factory.bin <user>@<ip>
-	mtd write /tmp/openwrt-ar71xx-generic-tl-mr3020-v1-squashfs-factory.bin firmware
-	reboot && exit
+    		scp bin/ar71xx/openwrt-ar71xx-generic-tl-mr3020-v1-squashfs-factory.bin <user>@<ip>
+		mtd write /tmp/openwrt-ar71xx-generic-tl-mr3020-v1-squashfs-factory.bin firmware
+		reboot && exit
 
 Login to the device
 	ssh root@192.168.1.1 -- Should login without a password
 
 -- Create extfs overlay
-Follow steps from "Partitioning the USB drive"
+Follow steps from "Partitioning the USB drive" or as below
 https://fixmynix.com/configuring-extroot-with-openwrt-on-tp-link-mr-3220/
 
 For fresh usb drive
@@ -150,12 +150,7 @@ Add line
 -- Update packages
 opkg update
 
--- Install packages
-opkg install <package-name>
-
-
-opkg install sensorid
-
+-- Install common packages
 opkg install luci
 opkg install coreutils-timeout
 opkg install curl
@@ -164,39 +159,33 @@ opkg install bluez-daemon
 opkg install bluez-libs
 opkg install bluez-utils
 
+-- change ipaddress for bridge interface
+vi /etc/config/network
+under config interface 'lan', change ipaddr to
+option ipaddr '192.168.50.1'
+
+-- Install RL packages
 rm -rf /www/index.html
+opkg install sensorid
 opkg install minimal-ui
-
-internet might be deleted from configuration files
-configure sensorid & internet using the UI
-
 opkg install sniffex-ssl
 opkg install alerts
 opkg install servient
 opkg install blu-sniffex
 opkg install sensor-restart
 
--- /etc/config/uhttpd
-Should use port 8000
-list listen_http '0.0.0.0:8000 [::]:8000'
-
 -- set password
 passwd
 Enter passwd
 Enter new passwd
 
--- change ipaddress for bridge interface
-vi /etc/config/network
-under config interface 'lan', change ipaddr to
-        option ipaddr '192.168.50.1'
 
 -- configure internet using minimal-ui
 -- set mac address of interface
--- change ssh, ui and config passwords
-
+-- change ssh,ui and config passwords
+	-- The above three are explained in a drive document
 
 -- auto power-on bluetooth controllers after boot
 In /etc/bluetooth/main.conf
 [Policy]
 AutoEnable=true
-
