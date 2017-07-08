@@ -68,6 +68,14 @@ ssh root@192.168.1.1
 Check file system size using df -h
 Should be approximately 200MB
 
+If multiple partitions on the  USB drive, then after reboot run the following commands
+block detect > /etc/config/fstab
+
+Enable all the partitions except the first partition which is used for overlay
+vi /etc/config/fstab
+
+reboot && exit
+Check if other partitions are automatically mounted
 ----------------------------------------------------------------------
 
 -- create customfeed - This will be part of repo and will not be required to be done by everyone.
@@ -171,7 +179,8 @@ opkg install minimal-ui
 opkg install sniffex-ssl
 opkg install alerts
 opkg install servient
-opkg install blu-sniffex
+opkg remove blu-sniffex
+opkg install blu_sniffex
 opkg install sensor-restart
 
 -- set password
